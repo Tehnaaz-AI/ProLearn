@@ -1,0 +1,196 @@
+@baseUrl = http://localhost:5000/api
+@instructorToken = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2NDAwMDAwMDAwMDAwMDAwMDAwMDAwMSIsInJvbGUiOiJpbnN0cnVjdG9yIiwiaWF0IjoxNzc4MDQ0MDAyfQ.3HTYkUTs8eFBct3IxUSoPK9-rQycB-T8-MQwye1XFAk
+@studentToken = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2NDAwMDAwMDAwMDAwMDAwMDAwMDAwMiIsInJvbGUiOiJzdHVkZW50IiwiaWF0IjoxNzc4MDQ0MDAyfQ.3e4QPUSM_ZydPt_6E295599lRCOBYROX55tvVb28BxA
+@courseId = 69fc1798bb0f6acc1b6af155
+@sectionId =69fc17b9bb0f6acc1b6af156
+@lectureId = 69fc17cfbb0f6acc1b6af157
+
+
+###
+#  database connection test
+GET http://localhost:5000/
+
+
+### ================================================
+#  COURSE ROUTES
+### ================================================
+
+### 1. Create Course (Instructor)
+POST {{baseUrl}}/courses
+Content-Type: application/json
+Authorization: {{instructorToken}}
+
+{
+  "title": "Full Stack Web Dev",
+  "description": "Learn MERN stack from scratch",
+  "isFree": false,
+  "price": 999,
+  "category": "Development",
+  "tags": ["nodejs", "react", "mongodb"]
+}
+
+### 2. Get All Courses (Public)
+GET {{baseUrl}}/courses
+
+### 3. Search Courses by title
+GET {{baseUrl}}/courses?search=web
+
+### 4. Filter Courses by category
+GET {{baseUrl}}/courses?category=Development
+
+### 5. Get Single Course
+GET {{baseUrl}}/courses/{{courseId}}
+
+### 6. Update Course (Instructor)
+PUT {{baseUrl}}/courses/{{courseId}}
+Content-Type: application/json
+Authorization: {{instructorToken}}
+
+{
+  "title": "full stack java development",
+  "description": "Learn java from scratch"
+}
+
+### 7. Publish / Unpublish Course (Instructor)
+PATCH {{baseUrl}}/courses/{{courseId}}/publish
+Authorization: {{instructorToken}}
+
+### 8. Get My Courses (Instructor)
+GET {{baseUrl}}/courses/my-courses
+Authorization: {{instructorToken}}
+
+### 9. Delete Course (Instructor/Admin)
+DELETE {{baseUrl}}/courses/{{courseId}}
+Authorization: {{instructorToken}}
+
+
+### ================================================
+#  SECTION ROUTES
+### ================================================
+
+### 10. Create Section (Instructor)
+POST {{baseUrl}}/sections
+Content-Type: application/json
+Authorization: {{instructorToken}}
+
+{
+  "title": "Getting Started",
+  "courseId": "{{courseId}}",
+  "order": 1
+}
+
+### 11. Get All Sections of a Course (Public)
+GET {{baseUrl}}/sections/course/{{courseId}}
+
+### 12. Update Section (Instructor)
+PUT {{baseUrl}}/sections/{{sectionId}}
+Content-Type: application/json
+Authorization: {{instructorToken}}
+
+{
+  "title": "Updated Section Title",
+  "order": 2
+}
+
+### 13. Delete Section (Instructor)
+DELETE {{baseUrl}}/sections/{{sectionId}}
+Authorization: {{instructorToken}}
+
+
+### ================================================
+#  LECTURE ROUTES
+### ================================================
+
+### 14. Create Lecture (Instructor)
+POST {{baseUrl}}/lectures
+Content-Type: application/json
+Authorization: {{instructorToken}}
+
+{
+  "title": "Introduction to Node.js",
+  "sectionId": "{{sectionId}}",
+  "courseId": "{{courseId}}",
+  "videoUrl": "https://example.com/video1.mp4",
+  "duration": 15,
+  "isPreview": true,
+  "order": 1
+}
+
+### 15. Create Non-Preview Lecture (Instructor)
+POST {{baseUrl}}/lectures
+Content-Type: application/json
+Authorization: {{instructorToken}}
+
+{
+  "title": "Deep Dive into Express",
+  "sectionId": "{{sectionId}}",
+  "courseId": "{{courseId}}",
+  "videoUrl": "https://example.com/video2.mp4",
+  "duration": 25,
+  "isPreview": false,
+  "order": 2
+}
+
+### 16. Get Lectures by Section (No Login - public)
+GET {{baseUrl}}/lectures/section/{{sectionId}}
+
+### 17. Get Lectures by Section (With Student Login)
+GET {{baseUrl}}/lectures/section/{{sectionId}}
+Authorization: {{studentToken}}
+
+### 18. Get Single Lecture - Preview (No Login)
+GET {{baseUrl}}/lectures/{{lectureId}}
+
+### 19. Get Single Lecture - Full (Student enrolled)
+GET {{baseUrl}}/lectures/{{lectureId}}
+Authorization: {{studentToken}}
+
+### 20. Update Lecture (Instructor)
+PUT {{baseUrl}}/lectures/{{lectureId}}
+Content-Type: application/json
+Authorization: {{instructorToken}}
+
+{
+  "title": "Updated Lecture Title",
+  "duration": 30
+}
+
+### 21. Delete Lecture (Instructor)
+DELETE {{baseUrl}}/lectures/{{lectureId}}
+Authorization: {{instructorToken}}
+
+
+### ================================================
+# ENROLLMENT ROUTES
+### ================================================
+
+### 22. Enroll in Free Course (Student)
+POST {{baseUrl}}/enrollments
+Content-Type: application/json
+Authorization: {{studentToken}}
+
+{
+  "courseId": "{{courseId}}"
+}
+
+### 23. Enroll in Paid Course (Student - after payment)
+POST {{baseUrl}}/enrollments
+Content-Type: application/json
+Authorization: {{studentToken}}
+
+{
+  "courseId": "{{courseId}}",
+  "paymentId": "pay_abc123xyz"
+}
+
+### 24. Check Enrollment Status (Student)
+GET {{baseUrl}}/enrollments/check/{{courseId}}
+Authorization: {{studentToken}}
+
+### 25. Get My Enrollments (Student)
+GET {{baseUrl}}/enrollments/my-enrollments
+Authorization: {{studentToken}}
+
+### 26. Get All Students in a Course (Instructor)
+GET {{baseUrl}}/enrollments/course/{{courseId}}
+Authorization: {{instructorToken}}
