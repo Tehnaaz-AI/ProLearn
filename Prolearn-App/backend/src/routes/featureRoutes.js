@@ -230,6 +230,24 @@ router.get("/leaderboard", asyncHandler(async (req, res) => {
   if (result.instructors) leaderboard.push(...result.instructors.map(entry => ({ ...entry, type: "instructor" })));
   leaderboard.sort((a, b) => b.xp - a.xp);
 
+  let globalRank = 0;
+  let prevXp = null;
+  for (let i = 0; i < leaderboard.length; i++) {
+    const entry = leaderboard[i];
+    if (entry.xp !== prevXp) {
+      globalRank = i + 1;
+      prevXp = entry.xp;
+    }
+    entry.rank = globalRank;
+  }
+
+  if (currentUserEntry && currentUserEntry.rank == null) {
+    const found = leaderboard.find(e => String(e._id) === String(currentUserEntry._id));
+    if (found) {
+      currentUserEntry.rank = found.rank;
+    }
+  }
+
   const analytics = {};
   if (result.students) {
     analytics.topStudent = result.students[0] || null;

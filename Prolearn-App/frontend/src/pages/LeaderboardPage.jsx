@@ -26,15 +26,16 @@ export function LeaderboardPage({ user, api, flash }) {
         loadLeaderboard();
     }, []);
 
-    const getRankIcon = (index) => {
-        if (index === 0) return <Trophy className="text-yellow-500" size={24} />;
-        if (index === 1) return <Medal className="text-gray-400" size={24} />;
-        if (index === 2) return <Award className="text-orange-600" size={24} />;
-        return <span className="text-lg font-bold text-slate-500">{index + 1}</span>;
+    const getRankIcon = (rank) => {
+        if (rank === 1) return <Trophy className="text-yellow-500" size={24} />;
+        if (rank === 2) return <Medal className="text-gray-400" size={24} />;
+        if (rank === 3) return <Award className="text-orange-600" size={24} />;
+        return <span className="text-lg font-bold text-slate-500">{rank}</span>;
     };
 
     const renderEntry = (entry, index, isCurrentUser = false) => {
         const entryData = entry.user ? entry : { user: entry };
+        const entryRank = entry.rank ?? (index + 1);
         const styleClass = isCurrentUser 
             ? "bg-gradient-to-r from-teal-50 to-emerald-50 border-teal-200 shadow-md ring-2 ring-teal-400" 
             : index === 0 
@@ -68,7 +69,7 @@ export function LeaderboardPage({ user, api, flash }) {
         return (
             <div key={entry._id || entry.id} className={`flex items-center gap-4 p-5 rounded-2xl border shadow-sm transition-all duration-200 ${styleClass}`}>
                 <div className="flex items-center justify-center w-14 h-14">
-                    {isCurrentUser ? <User className="text-teal-600" size={24} /> : getRankIcon(index)}
+                    {getRankIcon(entryRank)}
                 </div>
                 <div className="flex items-center gap-4 flex-1">
                     {entryData.user?.profilePictureUrl ? (
@@ -84,6 +85,9 @@ export function LeaderboardPage({ user, api, flash }) {
                             <span className="text-sm font-semibold text-slate-500 ml-2">@{entryData.user?.username || entryData.username}</span>
                             {isCurrentUser && <span className="ml-2 text-teal-600 text-sm font-semibold">(You)</span>}
                         </div>
+                        {isCurrentUser && entryRank && (
+                            <div className="mt-1 text-sm font-semibold text-teal-700">Your rank: {entryRank}</div>
+                        )}
                     </div>
                 </div>
                 <div className="text-right flex flex-col items-end gap-2">
@@ -94,9 +98,13 @@ export function LeaderboardPage({ user, api, flash }) {
                     <div className="flex items-center gap-3">
                         <div className="flex items-center gap-2 bg-blue-100 px-3 py-1.5 rounded-xl">
                             <Target size={16} className="text-blue-600" />
-                            <span className="text-base font-bold text-blue-700">Level {entry.level}</span>
+                            <span className="text-base font-bold text-blue-700">
+                                {entry.level != null ? `Level ${entry.level}` : `Instructor`}
+                            </span>
                         </div>
-                        <div className="text-sm text-slate-500 font-medium">{entry.completedLessons} lessons</div>
+                        <div className="text-sm text-slate-500 font-medium">
+                            {entry.completedLessons != null ? `${entry.completedLessons} lessons` : entry.totalEnrollments != null ? `${entry.totalEnrollments} enrollments` : "No stats yet"}
+                        </div>
                     </div>
                 </div>
             </div>
