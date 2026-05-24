@@ -88,6 +88,20 @@ async function calculateUserTotalXP(userId) {
   return totalXP;
 }
 
+async function calculateInstructorXP(userId) {
+  // XP for instructors: base for each published course + bonus per enrollment
+  const courses = await Course.find({ instructor: userId, status: "published" });
+  let totalXP = 0;
+  for (const course of courses) {
+    // base XP per published course
+    totalXP += 500;
+    // bonus per enrolled student
+    const enrollCount = await Enrollment.countDocuments({ course: course._id });
+    totalXP += enrollCount * 100;
+  }
+  return totalXP;
+}
+
 // Helper to extract user from request (for optional auth)
 async function getOptionalUser(req) {
   try {
@@ -106,129 +120,122 @@ async function getOptionalUser(req) {
 // Leaderboard routes
 router.get("/leaderboard", asyncHandler(async (req, res) => {
   const courseId = req.query.courseId;
+  const type = String(req.query.type || "both").toLowerCase(); // 'students', 'instructors', 'both'
   const currentUser = await getOptionalUser(req);
   let currentUserEntry = null;
-  
-  if (courseId) {
-    const leaderboard = await Leaderboard.find({ course: courseId })
-      .populate("user", "username firstName lastName profilePictureUrl")
-      .populate("course", "title")
-      .sort({ xp: -1, level: -1, score: -1, completedLessons: -1 });
-    
-    // For students, get their entry
-    if (currentUser && currentUser.role === "student") {
-      currentUserEntry = leaderboard.find(entry => String(entry.user._id) === String(currentUser._id)) || null;
-      if (!currentUserEntry) {
-        const xp = await calculateUserTotalXP(currentUser._id);
-        const userProgress = await Progress.find({ user: currentUser._id, course: courseId });
-        const totalCompletedLessons = userProgress.reduce((sum, p) => sum + p.watchedLessons.length, 0);
-        const level = Math.floor(xp / 500) + 1;
-        currentUserEntry = {
-          _id: currentUser._id,
-          user: currentUser,
-          xp,
-          level,
-          completedLessons: totalCompletedLessons
-        };
+
+  // Helper to assign dense ranks based on xp, completedLessons and level
+  function assignRanks(list) {
+    let rank = 0;
+    let prev = null;
+    for (let i = 0; i < list.length; i++) {
+      const item = list[i];
+      const key = `${item.xp}`;
+      if (key !== prev) {
+        rank = i + 1;
+        prev = key;
       }
+      item.rank = rank;
     }
-    
-    const totalXP = leaderboard.reduce((sum, entry) => sum + entry.xp, 0);
-    const totalLevels = leaderboard.reduce((sum, entry) => sum + entry.level, 0);
-    const avgLevel = leaderboard.length > 0 ? Math.round(totalLevels / leaderboard.length) : 0;
-    const topPerformer = leaderboard[0] || null;
-    
-    res.json({ 
-      leaderboard, 
-      currentUserEntry,
-      analytics: {
-        totalXP,
-        avgLevel,
-        totalParticipants: leaderboard.length,
-        topPerformer: topPerformer ? {
-          user: topPerformer.user,
-          xp: topPerformer.xp,
-          level: topPerformer.level
-        } : null
-      }
-    });
-  } else {
-    // Get all users who have any progress, leaderboard entries, or certificates
-    const [progressEntries, certificates, leaderboardEntries] = await Promise.all([
-      Progress.find(),
-      Certificate.find(),
-      Leaderboard.find()
-    ]);
-    
-    // Collect unique user IDs
-    const userIds = new Set();
-    progressEntries.forEach(p => userIds.add(String(p.user)));
-    certificates.forEach(c => userIds.add(String(c.user)));
-    leaderboardEntries.forEach(l => userIds.add(String(l.user)));
-    
-    // Fetch users
-    const users = await User.find({ _id: { $in: Array.from(userIds) } }, "username firstName lastName profilePictureUrl");
-    
-    // Calculate total XP for each user and build leaderboard
-    const leaderboardWithXP = [];
-    for (const user of users) {
+  }
+
+  // Build student leaderboard
+  async function buildStudentLeaderboard(filterCourseId) {
+    // If courseId passed, restrict to enrolled students for that course
+    let studentUsers;
+    if (filterCourseId) {
+      const enrolls = await Enrollment.find({ course: filterCourseId }).select("user");
+      const ids = enrolls.map(e => e.user);
+      studentUsers = await User.find({ _id: { $in: ids }, role: "student" }, "username firstName lastName profilePictureUrl");
+    } else {
+      studentUsers = await User.find({ role: "student" }, "username firstName lastName profilePictureUrl");
+    }
+
+    const list = [];
+    for (const user of studentUsers) {
       const xp = await calculateUserTotalXP(user._id);
       const userProgress = await Progress.find({ user: user._id });
       const totalCompletedLessons = userProgress.reduce((sum, p) => sum + p.watchedLessons.length, 0);
       const level = Math.floor(xp / 500) + 1;
-      
-      if (xp > 0) {
-        leaderboardWithXP.push({
-          _id: user._id,
-          user,
-          xp,
-          level,
-          completedLessons: totalCompletedLessons
-        });
-      }
+      list.push({ _id: user._id, user, xp, level, completedLessons: totalCompletedLessons });
     }
-    
-    // Sort by XP descending
-    leaderboardWithXP.sort((a, b) => b.xp - a.xp || b.level - a.level || b.completedLessons - a.completedLessons);
-    
-    // For students, get their entry
-    if (currentUser && currentUser.role === "student") {
-      currentUserEntry = leaderboardWithXP.find(entry => String(entry._id) === String(currentUser._id)) || null;
-      if (!currentUserEntry) {
+
+    // sort and assign ranks (only by xp)
+    list.sort((a, b) => b.xp - a.xp);
+    assignRanks(list);
+    return list;
+  }
+
+  // Build instructor leaderboard
+  async function buildInstructorLeaderboard() {
+    const instructors = await User.find({ role: "instructor" }, "username firstName lastName profilePictureUrl");
+    const list = [];
+    for (const ins of instructors) {
+      const xp = await calculateInstructorXP(ins._id);
+      // total enrollments across their courses for tie-breaker
+      const courses = await Course.find({ instructor: ins._id, status: "published" }).select("_id");
+      let enrollments = 0;
+      for (const c of courses) enrollments += await Enrollment.countDocuments({ course: c._id });
+      list.push({ _id: ins._id, user: ins, xp, totalEnrollments: enrollments });
+    }
+    // sort and assign ranks (only by xp)
+    list.sort((a, b) => b.xp - a.xp);
+    let rank = 0;
+    let prev = null;
+    for (let i = 0; i < list.length; i++) {
+      const key = `${list[i].xp}`;
+      if (key !== prev) { rank = i + 1; prev = key; }
+      list[i].rank = rank;
+    }
+    return list;
+  }
+
+  // decide which leaderboards to return
+  const result = {};
+  if (type === "students" || type === "both") {
+    const students = await buildStudentLeaderboard(courseId);
+    result.students = students;
+    // set current user entry if they are student
+    if (currentUser) {
+      currentUserEntry = students.find(e => String(e._id) === String(currentUser._id)) || null;
+      if (!currentUserEntry && currentUser.role === "student") {
         const xp = await calculateUserTotalXP(currentUser._id);
         const userProgress = await Progress.find({ user: currentUser._id });
         const totalCompletedLessons = userProgress.reduce((sum, p) => sum + p.watchedLessons.length, 0);
         const level = Math.floor(xp / 500) + 1;
-        currentUserEntry = {
-          _id: currentUser._id,
-          user: currentUser,
-          xp,
-          level,
-          completedLessons: totalCompletedLessons
-        };
+        currentUserEntry = { _id: currentUser._id, user: currentUser, xp, level, completedLessons: totalCompletedLessons, rank: null };
       }
     }
-    
-    const totalXP = leaderboardWithXP.length > 0 ? leaderboardWithXP[0].xp : 0;
-    const totalLevels = leaderboardWithXP.reduce((sum, entry) => sum + entry.level, 0);
-    const avgLevel = leaderboardWithXP.length > 0 ? Math.round(totalLevels / leaderboardWithXP.length) : 0;
-    const topPerformer = leaderboardWithXP[0] || null;
-    
-    res.json({ 
-      leaderboard: leaderboardWithXP, 
-      currentUserEntry,
-      analytics: {
-        totalXP,
-        avgLevel,
-        totalParticipants: leaderboardWithXP.length,
-        topPerformer: topPerformer ? {
-          user: topPerformer.user,
-          xp: topPerformer.xp,
-          level: topPerformer.level
-        } : null
-      }
-    });
   }
+
+  if (type === "instructors" || type === "both") {
+    const instructors = await buildInstructorLeaderboard();
+    result.instructors = instructors;
+    if (currentUser && currentUser.role === "instructor") {
+      const found = instructors.find(e => String(e._id) === String(currentUser._id));
+      if (found) currentUserEntry = found;
+      else {
+        const xp = await calculateInstructorXP(currentUser._id);
+        const courses = await Course.find({ instructor: currentUser._id, status: "published" }).select("_id");
+        let enrollments = 0;
+        for (const c of courses) enrollments += await Enrollment.countDocuments({ course: c._id });
+        currentUserEntry = { _id: currentUser._id, user: currentUser, xp, totalEnrollments: enrollments, rank: null };
+      }
+    }
+  }
+
+  // Attach analytics: top performers for both
+  const analytics = {};
+  if (result.students) {
+    analytics.topStudent = result.students[0] || null;
+    analytics.totalStudentParticipants = result.students.length;
+  }
+  if (result.instructors) {
+    analytics.topInstructor = result.instructors[0] || null;
+    analytics.totalInstructorParticipants = result.instructors.length;
+  }
+
+  res.json({ ...result, currentUserEntry, analytics });
 }));
 
 // User Analytics and Progress route
