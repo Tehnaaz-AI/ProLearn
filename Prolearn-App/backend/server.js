@@ -19,7 +19,12 @@ const app = express();
 const port = process.env.PORT || 8000;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-app.use(cors());
+app.use(
+  cors({
+    origin: [/\.vercel\.app$/],
+    credentials: true,
+  })
+);
 app.use(express.json({ limit: "1mb" }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
