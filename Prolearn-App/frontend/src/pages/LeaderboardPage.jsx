@@ -6,8 +6,10 @@ export function LeaderboardPage({ user, api, flash }) {
     const [leaderboard, setLeaderboard] = useState([]);
     const [analytics, setAnalytics] = useState(null);
     const [currentUserEntry, setCurrentUserEntry] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     async function loadLeaderboard() {
+        setLoading(true);
         try {
             const data = await api("/leaderboard");
             setLeaderboard(data.leaderboard || []);
@@ -15,6 +17,8 @@ export function LeaderboardPage({ user, api, flash }) {
             setCurrentUserEntry(data.currentUserEntry || null);
         } catch (err) {
             flash(err.message, "error");
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -31,6 +35,7 @@ export function LeaderboardPage({ user, api, flash }) {
 
     const renderEntry = (entry, index, isCurrentUser = false) => {
         const entryData = entry.user ? entry : { user: entry };
+        const isAdmin = user?.role === "admin";
         const styleClass = isCurrentUser 
             ? "bg-gradient-to-r from-teal-50 to-emerald-50 border-teal-200 shadow-md ring-2 ring-teal-400" 
             : index === 0 
@@ -83,19 +88,22 @@ export function LeaderboardPage({ user, api, flash }) {
                         <div className="text-sm text-slate-500">{entry.course?.title || "All courses"}</div>
                     </div>
                 </div>
-                <div className="text-right flex flex-col items-end gap-2">
-                    <div className="flex items-center gap-2 bg-amber-100 px-3 py-1.5 rounded-xl">
-                        <Zap size={18} className="text-amber-600" />
-                        <span className="text-xl font-black text-amber-700">{entry.xp} XP</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2 bg-blue-100 px-3 py-1.5 rounded-xl">
-                            <Target size={16} className="text-blue-600" />
-                            <span className="text-base font-bold text-blue-700">Level {entry.level}</span>
+                
+                {!isAdmin && (
+                    <div className="text-right flex flex-col items-end gap-2">
+                        <div className="flex items-center gap-2 bg-amber-100 px-3 py-1.5 rounded-xl">
+                            <Zap size={18} className="text-amber-600" />
+                            <span className="text-xl font-black text-amber-700">{entry.xp} XP</span>
                         </div>
-                        <div className="text-sm text-slate-500 font-medium">{entry.completedLessons} lessons</div>
+                        <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 bg-blue-100 px-3 py-1.5 rounded-xl">
+                                <Target size={16} className="text-blue-600" />
+                                <span className="text-base font-bold text-blue-700">Level {entry.level}</span>
+                            </div>
+                            <div className="text-sm text-slate-500 font-medium">{entry.completedLessons} lessons</div>
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
         );
     };
@@ -107,44 +115,49 @@ export function LeaderboardPage({ user, api, flash }) {
                 <p className="text-slate-500 mt-1">Top performers across all courses</p>
             </div>
 
-            {analytics && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {analytics?.topPerformer && (
-                        <div className="grid grid-cols-1 gap-4">
-                            <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg max-w-lg">
-                                <div className="flex items-center gap-3">
-                                    <Star size={32} className="text-purple-100" />
-                                    <div>
-                                        <div className="text-xl font-black truncate">
-                                            {analytics.topPerformer.user?.firstName} {analytics.topPerformer.user?.lastName}
-                                        </div>
-                                        <div className="text-purple-100 text-sm">
-                                            Level {analytics.topPerformer.level} • {analytics.topPerformer.xp} XP
-                                        </div>
-                                    </div>
+            {analytics?.topPerformer && (
+                <div className="grid grid-cols-1 gap-4">
+                    <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg max-w-lg">
+                        <div className="flex items-center gap-3">
+                            <Star size={32} className="text-purple-100" />
+                            <div>
+                                <div className="text-xl font-black truncate">
+                                    {analytics.topPerformer.user?.firstName} {analytics.topPerformer.user?.lastName}
+                                </div>
+                                <div className="text-purple-100 text-sm">
+                                    Level {analytics.topPerformer.level} • {analytics.topPerformer.xp} XP
                                 </div>
                             </div>
                         </div>
-                    )}
+                    </div>
                 </div>
             )}
 
-            <div className="grid gap-4">
-                <div className="max-h-[60vh] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-slate-300">
-                    {/* Show current user's entry at the top for students */}
-                    {currentUserEntry && user?.role === "student" && renderEntry(currentUserEntry, 0, true)}
-
-                    {/* Show leaderboard entries (all users) in a scrollable list */}
-                    {leaderboard.length === 0 ? (
-                        <div className="text-center py-12 bg-white rounded-2xl border border-slate-200 shadow-sm">
-                            <Users className="mx-auto text-slate-300" size={48} />
-                            <p className="text-slate-500 mt-4 text-lg">No data yet. Keep learning to appear on the leaderboard!</p>
-                        </div>
-                    ) : (
-                        leaderboard.map((entry, index) => renderEntry(entry, index))
-                    )}
+            {loading ? (
+                <div className="max-h-[60vh] flex items-center justify-center bg-white rounded-2xl border border-slate-200 shadow-sm">
+                    <div className="text-center">
+                        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mb-4"></div>
+                        <p className="text-slate-600 font-semibold">Loading leaderboard...</p>
+                    </div>
                 </div>
-            </div>
+            ) : (
+                <div className="grid gap-4">
+                    <div className="max-h-[60vh] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-slate-300">
+                        {/* Show current user's entry at the top for students and instructors */}
+                        {currentUserEntry && (user?.role === "student" || user?.role === "instructor") && renderEntry(currentUserEntry, 0, true)}
+
+                        {/* Show leaderboard entries (all students and instructors) in a scrollable list */}
+                        {leaderboard.length === 0 ? (
+                            <div className="text-center py-12 bg-white rounded-2xl border border-slate-200 shadow-sm">
+                                <Users className="mx-auto text-slate-300" size={48} />
+                                <p className="text-slate-500 mt-4 text-lg">No data yet. Keep learning to appear on the leaderboard!</p>
+                            </div>
+                        ) : (
+                            leaderboard.map((entry, index) => renderEntry(entry, index))
+                        )}
+                    </div>
+                </div>
+            )}
             
         </div>
     );
