@@ -5,3 +5,7 @@ export function signToken(user) {
     expiresIn: "1d",
   });
 }
+
+export function verifyToken(token) {
+  return jwt.verify(token, process.env.JWT_SECRET || "change-this-secret");
+}
