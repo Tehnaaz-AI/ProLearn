@@ -11,23 +11,31 @@ export function StudyGroupsPage({ user, api, courses, flash, setRoute }) {
     const [videoUrl, setVideoUrl] = useState("");
     const [showCreateGroup, setShowCreateGroup] = useState(false);
     const [newGroup, setNewGroup] = useState({ name: "", description: "", course: "" });
+    const [loading, setLoading] = useState(true);
+    const [messagesLoading, setMessagesLoading] = useState(false);
 
     async function loadGroups(courseId = "") {
         try {
+            setLoading(true);
             const url = courseId ? `/study-groups?courseId=${courseId}` : "/study-groups";
             const data = await api(url);
             setGroups(data.groups || []);
         } catch (err) {
             flash(err.message, "error");
+        } finally {
+            setLoading(false);
         }
     }
 
     async function loadMessages(groupId) {
         try {
+            setMessagesLoading(true);
             const data = await api(`/study-groups/${groupId}/messages`);
             setMessages(data.messages || []);
         } catch (err) {
             flash(err.message, "error");
+        } finally {
+            setMessagesLoading(false);
         }
     }
 
@@ -127,6 +135,17 @@ export function StudyGroupsPage({ user, api, courses, flash, setRoute }) {
         if (user.role === "admin") return true;
         return String(group.createdBy?._id || group.createdBy) === String(user._id);
     };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="text-center">
+                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mb-4"></div>
+                    <p className="text-slate-600 font-semibold">Loading study groups...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-180px)]">

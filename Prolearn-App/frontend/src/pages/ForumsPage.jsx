@@ -9,6 +9,7 @@ export function ForumsPage({ user, api, courses, enrollments, flash, setRoute })
     const [newPost, setNewPost] = useState({ title: "", content: "", course: "" });
     const [replyingTo, setReplyingTo] = useState(null);
     const [newComment, setNewComment] = useState("");
+    const [loading, setLoading] = useState(true);
     
     // Filter courses to only enrolled ones
     const enrolledCourseIds = new Set(enrollments.map(e => e.course?.id || e.course));
@@ -16,11 +17,14 @@ export function ForumsPage({ user, api, courses, enrollments, flash, setRoute })
 
     async function loadPosts(courseId = "") {
         try {
+            setLoading(true);
             const url = courseId ? `/forums/posts?courseId=${courseId}` : "/forums/posts";
             const data = await api(url);
             setPosts(data.posts || []);
         } catch (err) {
             flash(err.message, "error");
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -119,6 +123,17 @@ export function ForumsPage({ user, api, courses, enrollments, flash, setRoute })
         const course = courses.find(c => c.id === post.course?._id || c.id === post.course);
         return course && String(course.instructor) === String(user._id);
     };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="text-center">
+                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mb-4"></div>
+                    <p className="text-slate-600 font-semibold">Loading forum posts...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">

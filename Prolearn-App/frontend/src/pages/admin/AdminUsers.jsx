@@ -7,7 +7,13 @@ import { formatDate } from "../../utils/helpers";
 export function AdminUsers({ api, flash, user }) {
     const [users, setUsers] = useState([]);
     const [selected, setSelected] = useState(null);
-    const load = () => api("/admin/users").then((data) => setUsers(data.users || []));
+    const [loading, setLoading] = useState(true);
+    const load = () => {
+        setLoading(true);
+        return api("/admin/users")
+            .then((data) => setUsers(data.users || []))
+            .finally(() => setLoading(false));
+    };
     useEffect(() => { load().catch((err) => flash(err.message, "error")); }, []);
     async function open(id) {
         const data = await api(`/admin/users/${id}`);
@@ -36,6 +42,18 @@ export function AdminUsers({ api, flash, user }) {
         }
         load();
     }
+    
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="text-center">
+                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mb-4"></div>
+                    <p className="text-slate-600 font-semibold">Loading users...</p>
+                </div>
+            </div>
+        );
+    }
+    
     return (
         <section className="grid gap-5 xl:grid-cols-[1fr_0.85fr]">
             <Panel title="All users and instructors">

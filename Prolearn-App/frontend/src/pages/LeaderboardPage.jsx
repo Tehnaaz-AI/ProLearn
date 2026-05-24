@@ -35,7 +35,6 @@ export function LeaderboardPage({ user, api, flash }) {
 
     const renderEntry = (entry, index, isCurrentUser = false) => {
         const entryData = entry.user ? entry : { user: entry };
-        const isAdmin = user?.role === "admin";
         const styleClass = isCurrentUser 
             ? "bg-gradient-to-r from-teal-50 to-emerald-50 border-teal-200 shadow-md ring-2 ring-teal-400" 
             : index === 0 
@@ -85,25 +84,21 @@ export function LeaderboardPage({ user, api, flash }) {
                             <span className="text-sm font-semibold text-slate-500 ml-2">@{entryData.user?.username || entryData.username}</span>
                             {isCurrentUser && <span className="ml-2 text-teal-600 text-sm font-semibold">(You)</span>}
                         </div>
-                        <div className="text-sm text-slate-500">{entry.course?.title || "All courses"}</div>
                     </div>
                 </div>
-                
-                {!isAdmin && (
-                    <div className="text-right flex flex-col items-end gap-2">
-                        <div className="flex items-center gap-2 bg-amber-100 px-3 py-1.5 rounded-xl">
-                            <Zap size={18} className="text-amber-600" />
-                            <span className="text-xl font-black text-amber-700">{entry.xp} XP</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-2 bg-blue-100 px-3 py-1.5 rounded-xl">
-                                <Target size={16} className="text-blue-600" />
-                                <span className="text-base font-bold text-blue-700">Level {entry.level}</span>
-                            </div>
-                            <div className="text-sm text-slate-500 font-medium">{entry.completedLessons} lessons</div>
-                        </div>
+                <div className="text-right flex flex-col items-end gap-2">
+                    <div className="flex items-center gap-2 bg-amber-100 px-3 py-1.5 rounded-xl">
+                        <Zap size={18} className="text-amber-600" />
+                        <span className="text-xl font-black text-amber-700">{entry.xp} XP</span>
                     </div>
-                )}
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 bg-blue-100 px-3 py-1.5 rounded-xl">
+                            <Target size={16} className="text-blue-600" />
+                            <span className="text-base font-bold text-blue-700">Level {entry.level}</span>
+                        </div>
+                        <div className="text-sm text-slate-500 font-medium">{entry.completedLessons} lessons</div>
+                    </div>
+                </div>
             </div>
         );
     };

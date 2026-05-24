@@ -13,8 +13,14 @@ export function AdminCourses({ api, flash, openCourse }) {
     const [editingLesson, setEditingLesson] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
     const [isDeleting, setIsDeleting] = useState({ course: null, lesson: null });
+    const [loading, setLoading] = useState(true);
     
-    const load = () => api("/admin/courses").then((data) => setCourses(data.courses || []));
+    const load = () => {
+        setLoading(true);
+        return api("/admin/courses")
+            .then((data) => setCourses(data.courses || []))
+            .finally(() => setLoading(false));
+    };
     useEffect(() => { load().catch((err) => flash(err.message, "error")); }, []);
 
     const selectedCourse = courses.find(c => c.id === selectedCourseId);
@@ -106,6 +112,17 @@ export function AdminCourses({ api, flash, openCourse }) {
             index,
             videoFile: null
         });
+    }
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="text-center">
+                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mb-4"></div>
+                    <p className="text-slate-600 font-semibold">Loading courses...</p>
+                </div>
+            </div>
+        );
     }
 
     return (

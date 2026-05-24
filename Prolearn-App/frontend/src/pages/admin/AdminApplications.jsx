@@ -6,7 +6,13 @@ import { formatDate } from "../../utils/helpers";
 
 export function AdminApplications({ api, flash }) {
     const [apps, setApps] = useState([]);
-    const load = () => api("/instructor/applications").then((data) => setApps(data.applications || []));
+    const [loading, setLoading] = useState(true);
+    const load = () => {
+        setLoading(true);
+        return api("/instructor/applications")
+            .then((data) => setApps(data.applications || []))
+            .finally(() => setLoading(false));
+    };
     useEffect(() => { load().catch((err) => flash(err.message, "error")); }, []);
     async function action(id, type) {
         const reason = window.prompt(`${type} reason`) || type;
@@ -14,6 +20,18 @@ export function AdminApplications({ api, flash }) {
         flash(`Application ${type}d.`);
         load();
     }
+    
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="text-center">
+                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mb-4"></div>
+                    <p className="text-slate-600 font-semibold">Loading applications...</p>
+                </div>
+            </div>
+        );
+    }
+    
     return (
         <Panel title="Instructor applications">
             <List items={apps} empty="No applications." render={(app) => (
