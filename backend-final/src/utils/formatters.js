@@ -1,0 +1,62 @@
+export function publicUser(user) {
+  if (!user) return null;
+  return {
+    id: user._id,
+    _id: user._id,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    username: user.username,
+    email: user.email,
+    role: user.role,
+    status: user.status,
+    block_reason: user.blockReason,
+    blockReason: user.blockReason,
+    phone: user.phone,
+    city: user.city,
+    dob: user.dob,
+    education: user.education,
+    qualifications: user.qualifications,
+    experience: user.experience,
+    bio: user.bio,
+    payment_details: user.paymentDetails,
+    paymentDetails: user.paymentDetails,
+    profilePictureUrl: user.profilePictureUrl,
+    created_at: user.createdAt,
+    createdAt: user.createdAt,
+  };
+}
+
+export function courseDto(course, extras = {}) {
+  const instructor = course.instructor || {};
+  return {
+    id: course._id,
+    _id: course._id,
+    instructor_id: instructor._id || course.instructor,
+    instructorId: instructor._id || course.instructor,
+    instructor_name: instructor.username || "Instructor",
+    instructorName: instructor.username || "Instructor",
+    instructor_email: instructor.email || undefined,
+    instructorEmail: instructor.email || undefined,
+    instructor_bio: instructor.bio || undefined,
+    instructorBio: instructor.bio || undefined,
+    instructor_qualifications: instructor.qualifications || undefined,
+    instructorQualifications: instructor.qualifications || undefined,
+    instructor_experience: instructor.experience || undefined,
+    instructorExperience: instructor.experience || undefined,
+    instructor_education: instructor.education || undefined,
+    instructorEducation: instructor.education || undefined,
+    title: course.title,
+    category: course.category,
+    description: course.description,
+    level: course.level,
+    price: course.price,
+    is_paid: course.isPaid,
+    isPaid: course.isPaid,
+    status: course.status,
+    lessons: course.lessons || [],
+    quiz: course.quiz || [],
+    created_at: course.createdAt,
+    createdAt: course.createdAt,
+    ...extras,
+  };
+}
