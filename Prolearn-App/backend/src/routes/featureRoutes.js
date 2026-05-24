@@ -241,10 +241,10 @@ router.get("/leaderboard", asyncHandler(async (req, res) => {
     entry.rank = globalRank;
   }
 
-  if (currentUserEntry && currentUserEntry.rank == null) {
+  if (currentUserEntry) {
     const found = leaderboard.find(e => String(e._id) === String(currentUserEntry._id));
     if (found) {
-      currentUserEntry.rank = found.rank;
+      currentUserEntry = found;
     }
   }
 
