@@ -62,29 +62,29 @@ async function canModifyStudyGroup(req, group) {
 async function calculateUserTotalXP(userId) {
   // Get all progress entries
   const progressEntries = await Progress.find({ user: userId });
-  
+
   // Get all certificates
   const certificates = await Certificate.find({ user: userId });
-  
+
   let totalXP = 0;
-  
+
   // XP from lessons
   for (const progress of progressEntries) {
     totalXP += progress.watchedLessons.length * 50;
   }
-  
+
   // XP from completed courses (all lessons watched)
   for (const progress of progressEntries) {
     const course = await Course.findById(progress.course);
-    if (course && course.lessons.length > 0 && 
-        progress.watchedLessons.length === course.lessons.length) {
+    if (course && course.lessons.length > 0 &&
+      progress.watchedLessons.length === course.lessons.length) {
       totalXP += 500;
     }
   }
-  
+
   // XP from certificates
   totalXP += certificates.length * 1000;
-  
+
   return totalXP;
 }
 
@@ -224,7 +224,12 @@ router.get("/leaderboard", asyncHandler(async (req, res) => {
     }
   }
 
-  // Attach analytics: top performers for both
+  // Build a compatibility leaderboard array and analytics
+  const leaderboard = [];
+  if (result.students) leaderboard.push(...result.students.map(entry => ({ ...entry, type: "student" })));
+  if (result.instructors) leaderboard.push(...result.instructors.map(entry => ({ ...entry, type: "instructor" })));
+  leaderboard.sort((a, b) => b.xp - a.xp);
+
   const analytics = {};
   if (result.students) {
     analytics.topStudent = result.students[0] || null;
@@ -234,8 +239,10 @@ router.get("/leaderboard", asyncHandler(async (req, res) => {
     analytics.topInstructor = result.instructors[0] || null;
     analytics.totalInstructorParticipants = result.instructors.length;
   }
+  analytics.topPerformer = leaderboard[0] || null;
+  analytics.totalParticipants = leaderboard.length;
 
-  res.json({ ...result, currentUserEntry, analytics });
+  res.json({ ...result, leaderboard, currentUserEntry, analytics });
 }));
 
 // User Analytics and Progress route
@@ -243,45 +250,45 @@ router.get("/analytics/me", protect, asyncHandler(async (req, res) => {
   // Get all enrollments for the user
   const enrollments = await Enrollment.find({ user: req.user._id })
     .populate("course", "title lessons");
-  
+
   // Get all progress entries for the user
   const progressEntries = await Progress.find({ user: req.user._id });
-  
+
   // Calculate total XP using our function
   const totalXP = await calculateUserTotalXP(req.user._id);
-  
+
   // Create progress map for quick lookup
   const progressMap = new Map();
   progressEntries.forEach(progress => {
     progressMap.set(String(progress.course), progress);
   });
-  
+
   // Calculate totals
   let maxLevel = Math.floor(totalXP / 500) + 1;
   let totalCompletedLessons = 0;
-  
+
   // Build course progress from enrollments
   const courseProgress = enrollments.map(enrollment => {
     const course = enrollment.course;
     const progress = progressMap.get(String(course._id));
-    
+
     // Get completed lessons from Progress (source of truth)
     const completedLessons = progress?.watchedLessons?.length || 0;
     const totalLessons = course.lessons?.length || 0;
-    const percentage = totalLessons > 0 
-      ? Math.min(Math.round((completedLessons / totalLessons) * 100), 100) 
+    const percentage = totalLessons > 0
+      ? Math.min(Math.round((completedLessons / totalLessons) * 100), 100)
       : 0;
-    
+
     // Calculate course-specific XP
     let courseXP = completedLessons * 50;
     if (course && course.lessons.length > 0 && completedLessons === course.lessons.length) {
       courseXP += 500;
     }
     const level = Math.floor(courseXP / 500) + 1;
-    
+
     // Update totals
     totalCompletedLessons += completedLessons;
-    
+
     return {
       course: {
         _id: course._id,
@@ -294,7 +301,7 @@ router.get("/analytics/me", protect, asyncHandler(async (req, res) => {
       percentage: percentage
     };
   });
-  
+
   res.json({
     userAnalytics: {
       totalXP,
@@ -395,16 +402,16 @@ router.put("/forums/posts/:postId/like", protect, asyncHandler(async (req, res) 
     res.status(404);
     throw new Error("Post not found.");
   }
-  
+
   const userIdStr = String(req.user._id);
   const hasLiked = post.likes.some(id => String(id) === userIdStr);
-  
+
   if (hasLiked) {
     post.likes = post.likes.filter(id => String(id) !== userIdStr);
   } else {
     post.likes.push(req.user._id);
   }
-  
+
   await post.save();
   res.json({ post });
 }));
