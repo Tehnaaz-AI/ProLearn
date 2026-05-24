@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { Trophy, Medal, Award, Users, Star, User } from "lucide-react";
+import { Trophy, Medal, Award, Zap, Target, Users, Star, User } from "lucide-react";
 
 export function LeaderboardPage({ user, api, flash }) {
     const [leaderboard, setLeaderboard] = useState([]);
