@@ -36,34 +36,34 @@ export function LeaderboardPage({ user, api, flash }) {
     const renderEntry = (entry, index, isCurrentUser = false) => {
         const entryData = entry.user ? entry : { user: entry };
         const entryRank = entry.rank ?? (index + 1);
-        const styleClass = isCurrentUser 
-            ? "bg-gradient-to-r from-teal-50 to-emerald-50 border-teal-200 shadow-md ring-2 ring-teal-400" 
-            : index === 0 
-                ? "bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-200 shadow-md" 
-                : index === 1 
-                    ? "bg-gradient-to-r from-slate-50 to-gray-100 border-slate-200" 
-                    : index === 2 
-                        ? "bg-gradient-to-r from-orange-50 to-amber-50 border-orange-200" 
+        const styleClass = isCurrentUser
+            ? "bg-gradient-to-r from-teal-50 to-emerald-50 border-teal-200 shadow-md ring-2 ring-teal-400"
+            : index === 0
+                ? "bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-200 shadow-md"
+                : index === 1
+                    ? "bg-gradient-to-r from-slate-50 to-gray-100 border-slate-200"
+                    : index === 2
+                        ? "bg-gradient-to-r from-orange-50 to-amber-50 border-orange-200"
                         : "bg-white border-slate-200";
-        
-        const avatarClass = isCurrentUser 
-            ? "bg-gradient-to-br from-teal-600 to-emerald-700" 
-            : index === 0 
-                ? "bg-gradient-to-br from-yellow-500 to-amber-600" 
-                : index === 1 
-                    ? "bg-gradient-to-br from-slate-500 to-gray-600" 
-                    : index === 2 
-                        ? "bg-gradient-to-br from-orange-500 to-amber-600" 
-                        : "bg-gradient-to-br from-teal-600 to-teal-700";
 
-        const textClass = isCurrentUser 
-            ? "text-teal-900" 
-            : index === 0 
-                ? "text-yellow-900" 
-                : index === 1 
-                    ? "text-slate-800" 
-                    : index === 2 
-                        ? "text-orange-900" 
+        const avatarClass = isCurrentUser
+            ? "bg-linear-to-br from-teal-600 to-emerald-700"
+            : index === 0
+                ? "bg-linear-to-br from-yellow-500 to-amber-600"
+                : index === 1
+                    ? "bg-linear-to-br from-slate-500 to-gray-600"
+                    : index === 2
+                        ? "bg-linear-to-br from-orange-500 to-amber-600"
+                        : "bg-linear-to-br from-teal-600 to-teal-700";
+
+        const textClass = isCurrentUser
+            ? "text-teal-900"
+            : index === 0
+                ? "text-yellow-900"
+                : index === 1
+                    ? "text-slate-800"
+                    : index === 2
+                        ? "text-orange-900"
                         : "text-slate-900";
 
         return (
@@ -120,7 +120,7 @@ export function LeaderboardPage({ user, api, flash }) {
 
             {analytics?.topPerformer && (
                 <div className="grid grid-cols-1 gap-4">
-                    <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg max-w-lg">
+                    <div className="bg-linear-to-br from-purple-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg max-w-lg">
                         <div className="flex items-center gap-3">
                             <Star size={32} className="text-purple-100" />
                             <div>
@@ -145,11 +145,36 @@ export function LeaderboardPage({ user, api, flash }) {
                 </div>
             ) : (
                 <div className="grid gap-4">
+                    {currentUserEntry && (
+                        <div className="bg-white rounded-3xl border border-teal-200 p-6 shadow-sm">
+                            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                                <div>
+                                    <div className="text-slate-500 uppercase tracking-[0.2em] text-xs font-semibold">Your leaderboard standing</div>
+                                    <div className="mt-2 text-2xl font-black text-slate-900">
+                                        {currentUserEntry.user?.firstName || currentUserEntry.firstName || "You"} {currentUserEntry.user?.lastName || currentUserEntry.lastName || ""}
+                                        <span className="text-base font-semibold text-slate-500 ml-2">@{currentUserEntry.user?.username || currentUserEntry.username}</span>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                                    <div className="rounded-2xl bg-slate-50 px-4 py-3 text-center">
+                                        <div className="text-sm font-semibold text-slate-500">Rank</div>
+                                        <div className="mt-1 text-3xl font-black text-teal-700">{currentUserEntry.rank || "—"}</div>
+                                    </div>
+                                    <div className="rounded-2xl bg-slate-50 px-4 py-3 text-center">
+                                        <div className="text-sm font-semibold text-slate-500">XP</div>
+                                        <div className="mt-1 text-3xl font-black text-amber-700">{currentUserEntry.xp ?? "—"}</div>
+                                    </div>
+                                    <div className="rounded-2xl bg-slate-50 px-4 py-3 text-center">
+                                        <div className="text-sm font-semibold text-slate-500">Progress</div>
+                                        <div className="mt-1 text-3xl font-black text-slate-900">
+                                            {currentUserEntry.completedLessons != null ? `${currentUserEntry.completedLessons} lessons` : currentUserEntry.totalEnrollments != null ? `${currentUserEntry.totalEnrollments} enrollments` : "—"}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                     <div className="max-h-[60vh] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-slate-300">
-                        {/* Show current user's entry at the top for students and instructors */}
-                        {currentUserEntry && (user?.role === "student" || user?.role === "instructor") && renderEntry(currentUserEntry, 0, true)}
-
-                        {/* Show leaderboard entries (all students and instructors) in a scrollable list */}
                         {leaderboard.length === 0 ? (
                             <div className="text-center py-12 bg-white rounded-2xl border border-slate-200 shadow-sm">
                                 <Users className="mx-auto text-slate-300" size={48} />
@@ -161,7 +186,7 @@ export function LeaderboardPage({ user, api, flash }) {
                     </div>
                 </div>
             )}
-            
+
         </div>
     );
 }
