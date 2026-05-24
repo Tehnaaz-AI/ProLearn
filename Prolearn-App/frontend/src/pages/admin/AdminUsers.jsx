@@ -77,7 +77,7 @@ export function AdminUsers({ api, flash, user }) {
                 {selected ? (
                     <div className="space-y-2">
                         {Object.entries(selected).filter(([key]) => 
-                            !["password", "passwordHash", "_id", "id", "created_at", "createdAt", "updatedAt"].includes(key)
+                            !["password", "passwordHash", "_id", "id", "created_at", "createdAt", "updatedAt", "enrollments", "lessons", "completedLessons", "totalEnrollments"].includes(key)
                         ).map(([key, value]) => {
                             let label = key.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim();
                             label = label.charAt(0).toUpperCase() + label.slice(1);

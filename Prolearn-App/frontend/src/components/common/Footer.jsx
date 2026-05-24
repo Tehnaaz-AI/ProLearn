@@ -60,8 +60,7 @@ export function Footer({ user }) {
                     <p>&copy; {new Date().getFullYear()} ProLearn. All rights reserved.</p>
                     <div className="flex gap-4 font-medium">
                         <a href="#/terms" className="transition-colors hover:text-slate-900">Terms</a>
-                        <a href="#" className="transition-colors hover:text-slate-900">Privacy</a>
-                        <a href="#" className="transition-colors hover:text-slate-900">Cookies</a>
+                        <a href="#/privacy" className="transition-colors hover:text-slate-900">Privacy</a>
                     </div>
                 </div>
             </div>
