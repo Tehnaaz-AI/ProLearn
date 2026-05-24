@@ -6,7 +6,7 @@ export function LoginPage({ login, setRoute }) {
             <div className="panel mb-5 bg-slate-950 text-white">
                 <div className="pill">Secure access</div>
                 <h2 className="mt-5 text-4xl font-black">Welcome back.</h2>
-                <p className="mt-3 text-slate-300">Admin: admin@ProLearn.local / Admin@123.<br />Instructor: instructor@ProLearn.local / Instructor@123.</p>
+                <p className="mt-3 text-slate-300">Use your registered account credentials to log in.</p>
             </div>
             <SmartForm title="Login" button="Login" fields={[["email", "Email", "email"], ["password", "Password", "password"]]} onSubmit={login} />
             <p className="mt-5 text-center text-slate-600">

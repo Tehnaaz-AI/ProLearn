@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { Trophy, Medal, Award, Zap, Target, Users, Star, User } from "lucide-react";
+import { Trophy, Medal, Award, Users, Star, User } from "lucide-react";
 
 export function LeaderboardPage({ user, api, flash }) {
     const [leaderboard, setLeaderboard] = useState([]);
@@ -109,43 +109,18 @@ export function LeaderboardPage({ user, api, flash }) {
 
             {analytics && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl p-6 text-white shadow-lg">
-                        <div className="flex items-center gap-3">
-                            <Zap size={32} className="text-teal-100" />
-                            <div>
-                                <div className="text-3xl font-black">{analytics.totalXP}</div>
-                                <div className="text-teal-100 text-sm">Total XP</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl p-6 text-white shadow-lg">
-                        <div className="flex items-center gap-3">
-                            <Target size={32} className="text-amber-100" />
-                            <div>
-                                <div className="text-3xl font-black">Level {analytics.avgLevel}</div>
-                                <div className="text-amber-100 text-sm">Avg Level</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-6 text-white shadow-lg">
-                        <div className="flex items-center gap-3">
-                            <Users size={32} className="text-blue-100" />
-                            <div>
-                                <div className="text-3xl font-black">{analytics.totalParticipants}</div>
-                                <div className="text-blue-100 text-sm">Participants</div>
-                            </div>
-                        </div>
-                    </div>
-                    {analytics.topPerformer && (
-                        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg">
-                            <div className="flex items-center gap-3">
-                                <Star size={32} className="text-purple-100" />
-                                <div>
-                                    <div className="text-xl font-black truncate">
-                                        {analytics.topPerformer.user?.firstName} {analytics.topPerformer.user?.lastName}
-                                    </div>
-                                    <div className="text-purple-100 text-sm">
-                                        Level {analytics.topPerformer.level} • {analytics.topPerformer.xp} XP
+                    {analytics?.topPerformer && (
+                        <div className="grid grid-cols-1 gap-4">
+                            <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg max-w-lg">
+                                <div className="flex items-center gap-3">
+                                    <Star size={32} className="text-purple-100" />
+                                    <div>
+                                        <div className="text-xl font-black truncate">
+                                            {analytics.topPerformer.user?.firstName} {analytics.topPerformer.user?.lastName}
+                                        </div>
+                                        <div className="text-purple-100 text-sm">
+                                            Level {analytics.topPerformer.level} • {analytics.topPerformer.xp} XP
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -154,20 +129,23 @@ export function LeaderboardPage({ user, api, flash }) {
                 </div>
             )}
 
-            <div className="grid gap-4 max-h-[60vh] overflow-y-auto pr-2">
-                {/* Show current user's entry at the top for students */}
-                {currentUserEntry && user?.role === "student" && renderEntry(currentUserEntry, 0, true)}
+            <div className="grid gap-4">
+                <div className="max-h-[60vh] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-slate-300">
+                    {/* Show current user's entry at the top for students */}
+                    {currentUserEntry && user?.role === "student" && renderEntry(currentUserEntry, 0, true)}
 
-                {/* Show top performers */}
-                {leaderboard.length === 0 ? (
-                    <div className="text-center py-12 bg-white rounded-2xl border border-slate-200 shadow-sm">
-                        <Users className="mx-auto text-slate-300" size={48} />
-                        <p className="text-slate-500 mt-4 text-lg">No data yet. Keep learning to appear on the leaderboard!</p>
-                    </div>
-                ) : (
-                    leaderboard.map((entry, index) => renderEntry(entry, index))
-                )}
+                    {/* Show leaderboard entries (all users) in a scrollable list */}
+                    {leaderboard.length === 0 ? (
+                        <div className="text-center py-12 bg-white rounded-2xl border border-slate-200 shadow-sm">
+                            <Users className="mx-auto text-slate-300" size={48} />
+                            <p className="text-slate-500 mt-4 text-lg">No data yet. Keep learning to appear on the leaderboard!</p>
+                        </div>
+                    ) : (
+                        leaderboard.map((entry, index) => renderEntry(entry, index))
+                    )}
+                </div>
             </div>
+            
         </div>
     );
 }

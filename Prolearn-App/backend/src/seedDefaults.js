@@ -2,8 +2,13 @@ import bcrypt from "bcryptjs";
 import User from "./models/User.js";
 
 export async function seedDefaults() {
-  const adminEmail = process.env.ADMIN_EMAIL || "admin@ProLearn.local";
-  const adminPassword = process.env.ADMIN_PASSWORD || "Admin@123";
+  const adminEmail = process.env.ADMIN_EMAIL;
+  const adminPassword = process.env.ADMIN_PASSWORD;
+
+  if (!adminEmail || !adminPassword) {
+    console.warn("ADMIN_EMAIL or ADMIN_PASSWORD not set — skipping default admin creation.");
+    return;
+  }
 
   const admin = await User.findOne({ email: adminEmail });
   if (!admin) {
