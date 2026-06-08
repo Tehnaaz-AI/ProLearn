@@ -11,9 +11,7 @@ export function ForumsPage({ user, api, courses, enrollments, flash, setRoute })
     const [newComment, setNewComment] = useState("");
     const [loading, setLoading] = useState(true);
     
-    // Filter courses to only enrolled ones
-    const enrolledCourseIds = new Set(enrollments.map(e => e.course?.id || e.course));
-    const availableCourses = courses.filter(c => enrolledCourseIds.has(c.id));
+    // Show all courses in the forums filter
 
     async function loadPosts(courseId = "") {
         try {
@@ -164,22 +162,22 @@ export function ForumsPage({ user, api, courses, enrollments, flash, setRoute })
                         </button>
                     )}
                 </div>
-                <div className="overflow-x-auto pb-2">
-                    <div className="flex gap-2">
+                <div className="relative z-10 overflow-x-auto pb-4 pt-2 scrollbar-dark">
+                    <div className="flex gap-3 w-max">
                         <button
                             onClick={() => setSelectedCourse("")}
-                            className={`px-4 py-2 rounded-2xl font-bold text-sm whitespace-nowrap transition-all ${selectedCourse === "" ? "bg-teal-700 text-white" : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"}`}
+                            className={`shrink-0 px-6 py-2.5 rounded-full font-bold text-sm whitespace-nowrap transition-all cursor-pointer active:scale-95 ${selectedCourse === "" ? "bg-teal-600 text-white shadow-lg shadow-teal-500/30 ring-2 ring-teal-400 ring-offset-2 ring-offset-slate-950" : "bg-slate-800/60 border border-slate-700/60 text-slate-300 hover:bg-slate-700/60 hover:text-white shadow-sm"}`}
                         >
                             All Courses
                         </button>
-                        {availableCourses.map((course) => (
-                            <button
-                                key={course.id}
-                                onClick={() => setSelectedCourse(course.id)}
-                                className={`px-4 py-2 rounded-2xl font-bold text-sm whitespace-nowrap transition-all ${selectedCourse === course.id ? "bg-teal-700 text-white" : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"}`}
-                            >
-                                {course.title}
-                            </button>
+                        {courses.map((course) => (
+                                <button
+                                    key={course.id}
+                                    onClick={() => setSelectedCourse(course.id)}
+                                    className={`shrink-0 px-6 py-2.5 rounded-full font-bold text-sm whitespace-nowrap transition-all cursor-pointer active:scale-95 ${selectedCourse === course.id ? "bg-teal-600 text-white shadow-lg shadow-teal-500/30 ring-2 ring-teal-400 ring-offset-2 ring-offset-slate-950" : "bg-slate-800/60 border border-slate-700/60 text-slate-300 hover:bg-slate-700/60 hover:text-white shadow-sm"}`}
+                                >
+                                    {course.title}
+                                </button>
                         ))}
                     </div>
                 </div>
@@ -204,7 +202,7 @@ export function ForumsPage({ user, api, courses, enrollments, flash, setRoute })
                             required
                         >
                             <option value="">Select a course</option>
-                            {availableCourses.map((course) => (
+                            {courses.map((course) => (
                                 <option key={course.id} value={course.id}>{course.title}</option>
                             ))}
                         </select>
@@ -223,7 +221,7 @@ export function ForumsPage({ user, api, courses, enrollments, flash, setRoute })
                 </div>
             )}
 
-            <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+            <div className="space-y-4">
                 {posts.length === 0 ? (
                     <div className="text-center py-12 bg-white rounded-2xl border border-slate-200">
                         <MessageSquare className="mx-auto text-slate-300" size={48} />

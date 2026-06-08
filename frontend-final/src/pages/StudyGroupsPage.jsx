@@ -149,7 +149,7 @@ export function StudyGroupsPage({ user, api, courses, flash, setRoute }) {
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-140px)] animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto">
-            <div className="lg:col-span-1 space-y-6 flex flex-col min-h-0">
+            <div className="lg:col-span-1 gap-6 flex flex-col min-h-0">
                 <div className="relative overflow-hidden rounded-[2rem] bg-slate-950 p-6 text-white shadow-xl shadow-teal-900/20 shrink-0">
                     <div className="absolute inset-0 bg-gradient-to-br from-teal-900/80 via-emerald-900/40 to-slate-900"></div>
                     <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/10 rounded-full blur-2xl transform translate-x-1/2 -translate-y-1/2"></div>
@@ -171,11 +171,11 @@ export function StudyGroupsPage({ user, api, courses, flash, setRoute }) {
                         )}
                     </div>
 
-                    <div className="overflow-x-auto pb-2 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none' }}>
-                        <div className="flex gap-2">
+                    <div className="relative z-10 overflow-x-auto pb-4 pt-2 scrollbar-dark">
+                        <div className="flex gap-3 w-max">
                             <button
                                 onClick={() => setSelectedCourse("")}
-                                className={`shrink-0 px-4 py-2 rounded-full font-bold text-sm whitespace-nowrap transition-all ${selectedCourse === "" ? "bg-teal-500 text-white shadow-lg shadow-teal-500/20" : "bg-white/10 text-slate-300 hover:bg-white/20 hover:text-white"}`}
+                                className={`shrink-0 px-6 py-2.5 rounded-full font-bold text-sm whitespace-nowrap transition-all cursor-pointer active:scale-95 ${selectedCourse === "" ? "bg-teal-600 text-white shadow-lg shadow-teal-500/30 ring-2 ring-teal-400 ring-offset-2 ring-offset-slate-950" : "bg-slate-800/60 border border-slate-700/60 text-slate-300 hover:bg-slate-700/60 hover:text-white shadow-sm"}`}
                             >
                                 All Courses
                             </button>
@@ -183,7 +183,7 @@ export function StudyGroupsPage({ user, api, courses, flash, setRoute }) {
                                 <button
                                     key={course.id}
                                     onClick={() => setSelectedCourse(course.id)}
-                                    className={`shrink-0 px-4 py-2 rounded-full font-bold text-sm whitespace-nowrap transition-all ${selectedCourse === course.id ? "bg-teal-500 text-white shadow-lg shadow-teal-500/20" : "bg-white/10 text-slate-300 hover:bg-white/20 hover:text-white"}`}
+                                    className={`shrink-0 px-6 py-2.5 rounded-full font-bold text-sm whitespace-nowrap transition-all cursor-pointer active:scale-95 ${selectedCourse === course.id ? "bg-teal-600 text-white shadow-lg shadow-teal-500/30 ring-2 ring-teal-400 ring-offset-2 ring-offset-slate-950" : "bg-slate-800/60 border border-slate-700/60 text-slate-300 hover:bg-slate-700/60 hover:text-white shadow-sm"}`}
                                 >
                                     {course.title}
                                 </button>
