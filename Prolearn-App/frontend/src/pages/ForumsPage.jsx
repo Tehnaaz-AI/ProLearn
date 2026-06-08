@@ -164,8 +164,8 @@ export function ForumsPage({ user, api, courses, enrollments, flash, setRoute })
                         </button>
                     )}
                 </div>
-                <div className="overflow-x-auto pb-2 custom-scrollbar">
-                    <div className="flex gap-2">
+                <div className="pb-2">
+                    <div className="flex flex-wrap gap-2">
                         <button
                             onClick={() => setSelectedCourse("")}
                             className={`shrink-0 px-4 py-2 rounded-2xl font-bold text-sm whitespace-nowrap transition-all ${selectedCourse === "" ? "bg-teal-700 text-white" : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"}`}
@@ -223,7 +223,7 @@ export function ForumsPage({ user, api, courses, enrollments, flash, setRoute })
                 </div>
             )}
 
-            <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+            <div className="space-y-4">
                 {posts.length === 0 ? (
                     <div className="text-center py-12 bg-white rounded-2xl border border-slate-200">
                         <MessageSquare className="mx-auto text-slate-300" size={48} />

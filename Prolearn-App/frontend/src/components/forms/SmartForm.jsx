@@ -6,6 +6,12 @@ export function SmartForm({ title, button, fields, defaults = {}, onSubmit }) {
     const [error, setError] = useState("");
     const [showPassword, setShowPassword] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [currentStep, setCurrentStep] = useState(0);
+    
+    const fieldsPerStep = 4;
+    const isMultiStep = fields.length > fieldsPerStep;
+    const totalSteps = isMultiStep ? Math.ceil(fields.length / fieldsPerStep) : 1;
+    const currentFields = isMultiStep ? fields.slice(currentStep * fieldsPerStep, (currentStep + 1) * fieldsPerStep) : fields;
     
     async function submit(event) {
         event.preventDefault();
@@ -14,6 +20,7 @@ export function SmartForm({ title, button, fields, defaults = {}, onSubmit }) {
             setError("");
             await onSubmit(values);
             setValues(defaults);
+            setCurrentStep(0);
         } catch (err) {
             setError(err.message.includes("JSON") ? "Lessons and quiz fields must be valid JSON." : err.message);
         } finally {
@@ -41,8 +48,21 @@ export function SmartForm({ title, button, fields, defaults = {}, onSubmit }) {
                 </div>
             )}
             
-            <div className="grid gap-6 sm:grid-cols-2">
-                {fields.map((field) => {
+            {isMultiStep && (
+                <div className="mb-8">
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-black uppercase tracking-widest text-teal-700">Step {currentStep + 1} of {totalSteps}</span>
+                    </div>
+                    <div className="flex gap-2 h-2">
+                        {Array.from({ length: totalSteps }).map((_, idx) => (
+                            <div key={idx} className={`flex-1 rounded-full transition-all duration-500 ${idx <= currentStep ? "bg-teal-500 shadow-[0_0_10px_rgba(20,184,166,0.3)]" : "bg-slate-100"}`}></div>
+                        ))}
+                    </div>
+                </div>
+            )}
+            
+            <div className="grid gap-6 sm:grid-cols-2 animate-in slide-in-from-right-4 fade-in duration-300" key={currentStep}>
+                {currentFields.map((field) => {
                     let name, placeholder, type = "text", required = true;
                     if (Array.isArray(field)) {
                         [name, placeholder, type = "text"] = field;
@@ -126,21 +146,57 @@ export function SmartForm({ title, button, fields, defaults = {}, onSubmit }) {
                 </div>
             )}
             
-            <div className="pt-4 flex justify-end">
-                <button 
-                    type="submit" 
-                    className="btn h-14 px-8 w-full sm:w-auto flex items-center justify-center gap-2 text-base disabled:opacity-70"
-                    disabled={isSubmitting}
-                >
-                    {isSubmitting ? (
-                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    ) : (
-                        <>
-                            <CheckCircle2 size={20} />
-                            {button}
-                        </>
-                    )}
-                </button>
+            <div className="pt-4 flex justify-between gap-4 border-t border-slate-100 mt-6 pt-6">
+                {isMultiStep && currentStep > 0 && (
+                    <button 
+                        type="button" 
+                        onClick={() => setCurrentStep(prev => prev - 1)}
+                        className="btn-secondary h-14 px-8 flex items-center justify-center gap-2 text-base shadow-sm"
+                    >
+                        Previous
+                    </button>
+                )}
+                
+                {(!isMultiStep || currentStep === totalSteps - 1) ? (
+                    <button 
+                        type="submit" 
+                        className={`btn h-14 px-8 sm:w-auto flex items-center justify-center gap-2 text-base disabled:opacity-70 ${isMultiStep && currentStep === 0 ? "w-full" : "w-full ml-auto"}`}
+                        disabled={isSubmitting}
+                    >
+                        {isSubmitting ? (
+                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        ) : (
+                            <>
+                                <CheckCircle2 size={20} />
+                                {button}
+                            </>
+                        )}
+                    </button>
+                ) : (
+                    <button 
+                        type="button" 
+                        onClick={() => {
+                            // Simple required validation before next step
+                            const stepFields = currentFields.map(f => Array.isArray(f) ? f[0] : f.name);
+                            const hasEmptyRequired = currentFields.some(f => {
+                                const required = Array.isArray(f) ? true : (f.required !== false);
+                                const name = Array.isArray(f) ? f[0] : f.name;
+                                return required && !values[name];
+                            });
+                            
+                            if (hasEmptyRequired) {
+                                setError("Please fill in all required fields to continue.");
+                                return;
+                            }
+                            setError("");
+                            setCurrentStep(prev => prev + 1);
+                        }}
+                        className={`btn h-14 px-8 sm:w-auto flex items-center justify-center gap-2 text-base ${currentStep === 0 ? "w-full" : "w-full ml-auto"}`}
+                    >
+                        Next Step
+                        <ChevronRight size={20} />
+                    </button>
+                )}
             </div>
         </form>
     );
