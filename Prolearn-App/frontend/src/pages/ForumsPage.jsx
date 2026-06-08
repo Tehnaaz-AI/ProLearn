@@ -11,9 +11,7 @@ export function ForumsPage({ user, api, courses, enrollments, flash, setRoute })
     const [newComment, setNewComment] = useState("");
     const [loading, setLoading] = useState(true);
     
-    // Filter courses to only enrolled ones
-    const enrolledCourseIds = new Set(enrollments.map(e => e.course?.id || e.course));
-    const availableCourses = courses.filter(c => enrolledCourseIds.has(c.id));
+    // Show all courses in the forums filter
 
     async function loadPosts(courseId = "") {
         try {
@@ -172,7 +170,7 @@ export function ForumsPage({ user, api, courses, enrollments, flash, setRoute })
                         >
                             All Courses
                         </button>
-                        {availableCourses.map((course) => (
+                        {courses.map((course) => (
                                 <button
                                     key={course.id}
                                     onClick={() => setSelectedCourse(course.id)}
@@ -204,7 +202,7 @@ export function ForumsPage({ user, api, courses, enrollments, flash, setRoute })
                             required
                         >
                             <option value="">Select a course</option>
-                            {availableCourses.map((course) => (
+                            {courses.map((course) => (
                                 <option key={course.id} value={course.id}>{course.title}</option>
                             ))}
                         </select>
