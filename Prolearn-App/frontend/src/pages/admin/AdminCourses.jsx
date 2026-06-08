@@ -1,18 +1,10 @@
-
 import { useEffect, useState } from "react";
-import { Panel } from "../../components/common/Panel";
-import { List } from "../../components/ui/List";
-import { Info } from "../../components/ui/Info";
-import { Stars } from "../../components/ui/Stars";
 import { isPaid } from "../../utils/helpers";
-import { Loader2, Edit2, Trash2, Video, CheckCircle2 } from "lucide-react";
+import { Loader2, Trash2, BookOpen, Clock, FileText } from "lucide-react";
 
 export function AdminCourses({ api, flash, openCourse }) {
     const [courses, setCourses] = useState([]);
-    const [selectedCourseId, setSelectedCourseId] = useState("");
-    const [editingLesson, setEditingLesson] = useState(null);
-    const [isSaving, setIsSaving] = useState(false);
-    const [isDeleting, setIsDeleting] = useState({ course: null, lesson: null });
+    const [isDeleting, setIsDeleting] = useState(null);
     const [loading, setLoading] = useState(true);
     
     const load = () => {
@@ -23,95 +15,23 @@ export function AdminCourses({ api, flash, openCourse }) {
     };
     useEffect(() => { load().catch((err) => flash(err.message, "error")); }, []);
 
-    const selectedCourse = courses.find(c => c.id === selectedCourseId);
-
-    async function saveLesson(event) {
-        event.preventDefault();
-        if (!editingLesson) return;
-        
-        setIsSaving(true);
-        try {
-            let videoUrl = editingLesson.videoUrl;
-            if (editingLesson.videoFile) {
-                const formData = new FormData();
-                formData.append("video", editingLesson.videoFile);
-                const uploadRes = await api("/courses/upload-video", { method: "POST", body: formData });
-                videoUrl = uploadRes.videoUrl;
-            }
-
-            const updatedLessons = [...(selectedCourse.lessons || [])];
-            updatedLessons[editingLesson.index] = {
-                title: editingLesson.title,
-                content: editingLesson.content,
-                videoUrl
-            };
-
-            await api(`/courses/${selectedCourseId}`, {
-                method: "PUT",
-                body: JSON.stringify({ lessons: updatedLessons })
-            });
-
-            flash("Lesson saved successfully!");
-            setEditingLesson(null);
-            await load();
-        } catch (err) {
-            flash(err.message, "error");
-        } finally {
-            setIsSaving(false);
-        }
-    }
-
     async function deleteCourse(courseId) {
         const reason = window.prompt("Please enter a reason for deleting this course:");
         if (!reason) return;
         
-        setIsDeleting({ course: courseId, lesson: null });
+        setIsDeleting(courseId);
         try {
             await api(`/courses/${courseId}`, { 
                 method: "DELETE", 
                 body: JSON.stringify({ reason }) 
             });
             flash("Course deleted.");
-            if (selectedCourseId === courseId) {
-                setSelectedCourseId("");
-                setEditingLesson(null);
-            }
             await load();
         } catch (err) {
             flash(err.message, "error");
         } finally {
-            setIsDeleting({ course: null, lesson: null });
+            setIsDeleting(null);
         }
-    }
-
-    async function deleteLesson(courseId, lessonIdx) {
-        const reason = window.prompt("Please enter a reason for deleting this lesson:");
-        if (!reason) return;
-        
-        setIsDeleting({ course: courseId, lesson: lessonIdx });
-        try {
-            await api(`/courses/${courseId}/lessons/${lessonIdx}`, { 
-                method: "DELETE", 
-                body: JSON.stringify({ reason }) 
-            });
-            flash("Lesson deleted.");
-            if (selectedCourseId === courseId && editingLesson?.index === lessonIdx) {
-                setEditingLesson(null);
-            }
-            await load();
-        } catch (err) {
-            flash(err.message, "error");
-        } finally {
-            setIsDeleting({ course: null, lesson: null });
-        }
-    }
-
-    function startEditLesson(lesson, index) {
-        setEditingLesson({
-            ...lesson,
-            index,
-            videoFile: null
-        });
     }
 
     if (loading) {
@@ -126,292 +46,107 @@ export function AdminCourses({ api, flash, openCourse }) {
     }
 
     return (
-        <div className="space-y-5">
-            {editingLesson ? (
-                <Panel title={`Edit Lesson ${editingLesson.index + 1}`}>
-                    <form onSubmit={saveLesson} className="space-y-4">
-                        <div>
-                            <label className="text-sm font-semibold text-slate-700 mb-1 block">Lesson Title</label>
-                            <input 
-                                className="input" 
-                                value={editingLesson.title}
-                                onChange={(e) => setEditingLesson({...editingLesson, title: e.target.value})}
-                            />
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-12 max-w-7xl mx-auto">
+            {/* Premium Header */}
+            <div className="relative overflow-hidden rounded-[2rem] bg-slate-950 p-8 sm:p-12 text-white shadow-2xl shadow-teal-900/20">
+                <div className="absolute inset-0 bg-gradient-to-br from-teal-900/80 via-slate-900 to-slate-950"></div>
+                <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
+                
+                <div className="relative z-10 flex items-center justify-between">
+                    <div>
+                        <div className="inline-flex items-center gap-1.5 rounded-full bg-teal-500/20 border border-teal-400/30 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-teal-200 backdrop-blur-md mb-4">
+                            Admin Controls
                         </div>
-                        <div>
-                            <label className="text-sm font-semibold text-slate-700 mb-1 block">Lesson Description</label>
-                            <textarea 
-                                className="input min-h-32" 
-                                value={editingLesson.content}
-                                onChange={(e) => setEditingLesson({...editingLesson, content: e.target.value})}
-                            />
-                        </div>
-                        <div className="grid gap-3 md:grid-cols-2">
-                            <div>
-                                <label className="text-sm font-semibold text-slate-700 mb-1 block">Video URL (optional)</label>
-                                <input 
-                                    className="input" 
-                                    value={editingLesson.videoUrl}
-                                    onChange={(e) => setEditingLesson({...editingLesson, videoUrl: e.target.value})}
-                                    placeholder="https://example.com/video.mp4"
-                                />
+                        <h1 className="text-4xl sm:text-5xl font-black tracking-tight drop-shadow-sm">
+                            Course Management
+                        </h1>
+                    </div>
+                </div>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {courses.map((course) => (
+                    <div key={course.id} className="group flex flex-col rounded-3xl bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 hover:border-teal-300 transition-all duration-300 overflow-hidden">
+                        <div className="p-6 flex-1 flex flex-col">
+                            <div className="flex justify-between items-start mb-4 gap-4">
+                                <span className={`inline-flex rounded-full px-3 py-1 text-xs font-black uppercase tracking-widest ${isPaid(course) ? 'bg-amber-100 text-amber-700' : 'bg-teal-100 text-teal-700'}`}>
+                                    {isPaid(course) ? `INR ${course.price}` : "Free"}
+                                </span>
+                                <span className="inline-flex rounded-full px-3 py-1 text-xs font-bold bg-slate-100 text-slate-600">
+                                    {course.category}
+                                </span>
                             </div>
-                            <div>
-                                <label className="text-sm font-semibold text-slate-700 mb-1 block">Upload New Video (optional)</label>
-                                <input 
-                                    className="input" 
-                                    type="file" 
-                                    accept="video/*"
-                                    onChange={(e) => setEditingLesson({...editingLesson, videoFile: e.target.files?.[0] || null})}
-                                />
-                                {editingLesson.videoFile && (
-                                    <p className="text-sm text-teal-700 mt-1 flex items-center gap-1">
-                                        <CheckCircle2 size={16} />
-                                        {editingLesson.videoFile.name}
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-                        <div className="flex gap-3">
-                            <button 
-                                type="submit" 
-                                className="btn flex items-center justify-center gap-2"
-                                disabled={isSaving}
-                            >
-                                {isSaving ? (
-                                    <>
-                                        <Loader2 className="animate-spin" size={20} />
-                                        Saving Lesson...
-                                    </>
-                                ) : "Save Lesson"}
-                            </button>
-                            <button 
-                                type="button" 
-                                className="btn-secondary"
-                                onClick={() => setEditingLesson(null)}
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    </form>
-                </Panel>
-            ) : (
-                <Panel title="All courses (Admin)">
-                    <List items={courses} empty="No courses yet." render={(course) => (
-                        <div className="space-y-3">
-                            <div className="flex flex-col justify-between gap-3 md:flex-row">
-                                <div>
-                                    <strong className="text-xl">{course.title}</strong>
-                                    <p className="text-sm text-slate-600">{course.category} | {isPaid(course) ? `INR ${course.price}` : "Free"}</p>
-                                </div>
-                                <div className="flex items-center gap-2 flex-wrap">
-                                    <button 
-                                        className="btn-secondary" 
-                                        onClick={() => setSelectedCourseId(selectedCourseId === course.id ? "" : course.id)}
-                                    >
-                                        {selectedCourseId === course.id ? "Hide Details" : "Manage Lessons"}
-                                    </button>
-                                    <button 
-                                        className="btn-danger flex items-center gap-1" 
-                                        onClick={() => deleteCourse(course.id)}
-                                        disabled={isDeleting.course === course.id}
-                                    >
-                                        {isDeleting.course === course.id ? (
-                                            <>
-                                                <Loader2 className="animate-spin" size={16} />
-                                                Deleting...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Trash2 size={16} />
-                                                Delete Course
-                                            </>
-                                        )}
-                                    </button>
-                                    <div className="grid grid-cols-2 gap-2 text-center text-sm">
-                                        <Info label="Created At" value={new Date(course.created_at).toLocaleDateString()} />
+                            
+                            <h3 className="text-xl font-black text-slate-900 mb-2 line-clamp-2 group-hover:text-teal-700 transition-colors">
+                                {course.title}
+                            </h3>
+                            
+                            <p className="text-sm text-slate-500 mb-6 line-clamp-3 flex-1">
+                                {course.description || "No description provided."}
+                            </p>
+
+                            <div className="bg-slate-50 rounded-2xl p-4 mb-6 border border-slate-100">
+                                <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Instructor Details</div>
+                                <div className="flex items-center gap-3">
+                                    <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-slate-200 text-slate-700 font-bold">
+                                        {(course.instructor_name || "I").charAt(0).toUpperCase()}
+                                    </div>
+                                    <div className="overflow-hidden">
+                                        <div className="font-bold text-slate-900 truncate">{course.instructor_name || "Unknown Instructor"}</div>
+                                        <div className="text-xs text-slate-500 truncate">{course.instructor_email || "No email available"}</div>
                                     </div>
                                 </div>
                             </div>
-                            
-                            {selectedCourseId === course.id && (
-                                <div className="mt-4 space-y-4">
-                                    <Panel title="Lessons">
-                                        <div className="mb-4">
-                                            {!editingLesson?.isNew ? (
-                                                <button 
-                                                    type="button" 
-                                                    className="btn flex items-center justify-center gap-2 w-full"
-                                                    onClick={() => {
-                                                        setEditingLesson({
-                                                            title: "",
-                                                            content: "",
-                                                            videoUrl: "",
-                                                            videoFile: null,
-                                                            index: course.lessons?.length || 0,
-                                                            isNew: true
-                                                        });
-                                                    }}
-                                                >
-                                                    <Edit2 size={20} />
-                                                    Add New Lesson
-                                                </button>
-                                            ) : (
-                                                <form onSubmit={async (event) => {
-                                                    event.preventDefault();
-                                                    if (!editingLesson.title.trim()) {
-                                                        flash("Lesson title is required!", "error");
-                                                        return;
-                                                    }
-                                                    
-                                                    setIsSaving(true);
-                                                    try {
-                                                        let videoUrl = editingLesson.videoUrl;
-                                                        if (editingLesson.videoFile) {
-                                                            const formData = new FormData();
-                                                            formData.append("video", editingLesson.videoFile);
-                                                            const uploadRes = await api("/courses/upload-video", { 
-                                                                method: "POST", 
-                                                                body: formData 
-                                                            });
-                                                            videoUrl = uploadRes.videoUrl;
-                                                        }
 
-                                                        const updatedLessons = [...(course.lessons || []), {
-                                                            title: editingLesson.title,
-                                                            content: editingLesson.content,
-                                                            videoUrl
-                                                        }];
-
-                                                        await api(`/courses/${course.id}`, {
-                                                            method: "PUT",
-                                                            body: JSON.stringify({ lessons: updatedLessons })
-                                                        });
-
-                                                        flash("New lesson added successfully!");
-                                                        setEditingLesson(null);
-                                                        await load();
-                                                    } catch (err) {
-                                                        flash(err.message, "error");
-                                                    } finally {
-                                                        setIsSaving(false);
-                                                    }
-                                                }} className="space-y-4">
-                                                    <div>
-                                                        <label className="text-sm font-semibold text-slate-700 mb-1 block flex items-center gap-1">
-                                                            Lesson Title <span className="text-red-600 font-bold">*</span>
-                                                        </label>
-                                                        <input 
-                                                            className="input" 
-                                                            placeholder="Enter lesson title"
-                                                            value={editingLesson.title}
-                                                            onChange={(e) => setEditingLesson({...editingLesson, title: e.target.value})}
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label className="text-sm font-semibold text-slate-700 mb-1 block">Lesson Description</label>
-                                                        <textarea 
-                                                            className="input min-h-32" 
-                                                            placeholder="Enter lesson description"
-                                                            value={editingLesson.content}
-                                                            onChange={(e) => setEditingLesson({...editingLesson, content: e.target.value})}
-                                                        />
-                                                    </div>
-                                                    <div className="grid gap-3 md:grid-cols-2">
-                                                        <div>
-                                                            <label className="text-sm font-semibold text-slate-700 mb-1 block">Video URL (optional)</label>
-                                                            <input 
-                                                                className="input" 
-                                                                value={editingLesson.videoUrl}
-                                                                onChange={(e) => setEditingLesson({...editingLesson, videoUrl: e.target.value})}
-                                                                placeholder="https://example.com/video.mp4"
-                                                            />
-                                                        </div>
-                                                        <div>
-                                                            <label className="text-sm font-semibold text-slate-700 mb-1 block">Upload Video (optional)</label>
-                                                            <input 
-                                                                className="input" 
-                                                                type="file" 
-                                                                accept="video/*"
-                                                                onChange={(e) => setEditingLesson({...editingLesson, videoFile: e.target.files?.[0] || null})}
-                                                            />
-                                                            {editingLesson.videoFile && (
-                                                                <p className="text-sm text-teal-700 mt-1 flex items-center gap-1">
-                                                                    <CheckCircle2 size={16} />
-                                                                    {editingLesson.videoFile.name}
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex gap-3">
-                                                        <button 
-                                                            type="submit" 
-                                                            className="btn flex items-center justify-center gap-2"
-                                                            disabled={isSaving}
-                                                        >
-                                                            {isSaving ? (
-                                                                <>
-                                                                    <Loader2 className="animate-spin" size={20} />
-                                                                    Adding Lesson...
-                                                                </>
-                                                            ) : "Add Lesson"}
-                                                        </button>
-                                                        <button 
-                                                            type="button" 
-                                                            className="btn-secondary"
-                                                            onClick={() => setEditingLesson(null)}
-                                                        >
-                                                            Cancel
-                                                        </button>
-                                                    </div>
-                                                </form>
-                                            )}
-                                        </div>
-                                        <List items={course.lessons || []} empty="No lessons yet. Click 'Add New Lesson' to get started!" render={(lesson, idx) => (
-                                            <div className="flex justify-between items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                                                <div className="flex-1">
-                                                    <div className="flex items-center gap-2 font-bold">
-                                                        <Video size={16} className="text-teal-700" />
-                                                        Lesson {idx + 1}: {lesson.title}
-                                                    </div>
-                                                    <p className="text-sm text-slate-600 mt-1">{lesson.content}</p>
-                                                    {lesson.videoUrl && (
-                                                        <p className="text-sm text-teal-700 mt-1 flex items-center gap-1">
-                                                            <CheckCircle2 size={14} />
-                                                            Video attached
-                                                        </p>
-                                                    )}
-                                                </div>
-                                                <div className="flex gap-2">
-                                                    <button 
-                                                        className="btn-secondary text-sm flex items-center gap-1" 
-                                                        onClick={() => startEditLesson(lesson, idx)}
-                                                    >
-                                                        <Edit2 size={16} />
-                                                        Edit
-                                                    </button>
-                                                    <button 
-                                                        className="btn-danger text-sm flex items-center gap-1" 
-                                                        onClick={() => deleteLesson(course.id, idx)}
-                                                        disabled={isDeleting.course === course.id && isDeleting.lesson === idx}
-                                                    >
-                                                        {isDeleting.course === course.id && isDeleting.lesson === idx ? (
-                                                            <Loader2 className="animate-spin" size={16} />
-                                                        ) : (
-                                                            <Trash2 size={16} />
-                                                        )}
-                                                        Delete
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        )} />
-                                    </Panel>
+                            <div className="flex items-center gap-4 text-sm font-semibold text-slate-600 mb-6">
+                                <div className="flex items-center gap-1.5" title="Lessons">
+                                    <FileText size={16} className="text-slate-400" />
+                                    {course.lessons?.length || 0} Lessons
                                 </div>
-                            )}
+                                <div className="flex items-center gap-1.5" title="Created On">
+                                    <Clock size={16} className="text-slate-400" />
+                                    {new Date(course.created_at || course.createdAt || Date.now()).toLocaleDateString()}
+                                </div>
+                            </div>
+
+                            <div className="flex gap-2">
+                                <button 
+                                    className="flex-1 btn-secondary flex items-center justify-center gap-2 py-3 text-sm" 
+                                    onClick={() => openCourse(course.id)}
+                                >
+                                    <BookOpen size={16} />
+                                    View
+                                </button>
+                                <button 
+                                    className="flex-1 btn-danger flex items-center justify-center gap-2 py-3 text-sm" 
+                                    onClick={() => deleteCourse(course.id)}
+                                    disabled={isDeleting === course.id}
+                                >
+                                    {isDeleting === course.id ? (
+                                        <>
+                                            <Loader2 className="animate-spin" size={16} />
+                                            Deleting
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Trash2 size={16} />
+                                            Delete
+                                        </>
+                                    )}
+                                </button>
+                            </div>
                         </div>
-                    )} />
-                </Panel>
-            )}
+                    </div>
+                ))}
+
+                {courses.length === 0 && (
+                    <div className="col-span-full text-center py-20 bg-white rounded-3xl border border-slate-200 shadow-sm">
+                        <BookOpen className="mx-auto text-slate-300 mb-4" size={48} />
+                        <h3 className="text-xl font-bold text-slate-900 mb-2">No courses found</h3>
+                        <p className="text-slate-500">There are currently no courses on the platform.</p>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

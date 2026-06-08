@@ -73,38 +73,89 @@ export function AdminUsers({ api, flash, user }) {
                 </div>
             </div>
 
-            <section className="grid gap-5 xl:grid-cols-[1fr_0.85fr]">
-                <Panel title="All users and instructors">
-                    <List items={users} render={(u) => (
-                        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between p-2">
-                        <div>
-                            <strong>{u.username}</strong>
-                            <p className="text-sm text-slate-600">{u.email} | {u.role} | {u.status}</p>
-                            {u.block_reason && <small className="text-red-700">Reason: {u.block_reason}</small>}
-                        </div>
-                        <div className="flex gap-2 flex-wrap">
-                            <button className="btn-secondary" onClick={() => open(u.id)}>Details</button>
-                            {u.id !== user.id && u.status !== "blocked" && <button className="btn-danger" onClick={() => block(u.id)}>Block</button>}
-                            {u.id !== user.id && u.status === "blocked" && <button className="btn" onClick={() => unblock(u.id)}>Unblock</button>}
-                            {u.id !== user.id && <button className="btn-danger" onClick={() => deleteUser(u.id)}>Delete</button>}
-                        </div>
+            <section className="grid gap-8 lg:grid-cols-[1.2fr_1fr]">
+                <div className="space-y-6">
+                    <div className="flex items-center justify-between mb-2">
+                        <h2 className="text-2xl font-black text-slate-900">All Users</h2>
+                        <span className="text-sm font-semibold text-slate-500">{users.length} total</span>
                     </div>
-                )} />
-            </Panel>
-            <Panel title="Selected user details">
-                {selected ? (
-                    <div className="space-y-2">
-                        {Object.entries(selected).filter(([key]) => 
-                            !["password", "passwordHash", "_id", "id", "created_at", "createdAt", "updatedAt", "enrollments", "lessons", "completedLessons", "totalEnrollments"].includes(key)
-                        ).map(([key, value]) => {
-                            let label = key.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim();
-                            label = label.charAt(0).toUpperCase() + label.slice(1);
-                            return <Detail key={key} label={label} value={value || "Not provided"} />;
-                        })}
+                    <div className="grid gap-4">
+                        {users.map(u => (
+                            <div key={u.id} className={`group relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl border transition-all duration-300 ${selected?.id === u.id ? "border-teal-500 bg-teal-50/50 shadow-md shadow-teal-500/10" : "border-slate-200 bg-white hover:border-teal-300 hover:shadow-lg hover:shadow-slate-200/50"}`}>
+                                <div className="flex items-center gap-4">
+                                    <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-full text-lg font-black shadow-inner ${u.status === "blocked" ? "bg-red-100 text-red-700" : "bg-teal-100 text-teal-700"}`}>
+                                        {u.username.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                        <div className="flex items-center gap-2">
+                                            <h3 className="font-bold text-slate-900 text-lg">{u.username}</h3>
+                                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${u.role === 'admin' ? 'bg-purple-100 text-purple-700' : u.role === 'instructor' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}`}>
+                                                {u.role}
+                                            </span>
+                                            {u.status === "blocked" && (
+                                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-100 text-red-700">Blocked</span>
+                                            )}
+                                        </div>
+                                        <p className="text-sm font-medium text-slate-500 mt-0.5">{u.email}</p>
+                                        {u.block_reason && <p className="text-xs font-semibold text-red-600 mt-1">Reason: {u.block_reason}</p>}
+                                    </div>
+                                </div>
+                                <div className="flex flex-wrap gap-2 sm:opacity-0 group-hover:opacity-100 transition-opacity focus-within:opacity-100">
+                                    <button className="btn-secondary py-1.5 px-3 text-xs" onClick={() => open(u.id)}>View</button>
+                                    {u.id !== user.id && u.status !== "blocked" && <button className="btn-danger py-1.5 px-3 text-xs bg-red-50 text-red-700 border-red-200 hover:bg-red-600 hover:text-white" onClick={() => block(u.id)}>Block</button>}
+                                    {u.id !== user.id && u.status === "blocked" && <button className="btn py-1.5 px-3 text-xs" onClick={() => unblock(u.id)}>Unblock</button>}
+                                    {u.id !== user.id && <button className="btn-danger py-1.5 px-3 text-xs" onClick={() => deleteUser(u.id)}>Delete</button>}
+                                </div>
+                            </div>
+                        ))}
+                        {users.length === 0 && (
+                            <div className="text-center py-12 bg-white rounded-2xl border border-slate-200">
+                                <p className="text-slate-500 font-medium">No users found.</p>
+                            </div>
+                        )}
                     </div>
-                ) : <p className="text-slate-500">Open a user to view details except password.</p>}
-            </Panel>
-        </section>
+                </div>
+
+                <div className="lg:sticky lg:top-24 h-fit">
+                    <div className="rounded-3xl bg-white border border-slate-200 p-6 sm:p-8 shadow-xl shadow-slate-200/40">
+                        <h2 className="text-xl font-black text-slate-900 mb-6">User Details</h2>
+                        {selected ? (
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-4 pb-6 border-b border-slate-100 mb-6">
+                                    <div className="grid h-16 w-16 place-items-center rounded-2xl bg-gradient-to-br from-teal-500 to-teal-700 text-2xl font-black text-white shadow-lg shadow-teal-500/30">
+                                        {selected.username.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                        <h3 className="text-2xl font-black text-slate-900">{selected.username}</h3>
+                                        <p className="text-slate-500 font-medium">{selected.email}</p>
+                                    </div>
+                                </div>
+                                <div className="grid gap-3">
+                                    {Object.entries(selected).filter(([key]) => 
+                                        !["password", "passwordHash", "_id", "id", "created_at", "createdAt", "updatedAt", "enrollments", "lessons", "completedLessons", "totalEnrollments", "username", "email"].includes(key)
+                                    ).map(([key, value]) => {
+                                        let label = key.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim();
+                                        label = label.charAt(0).toUpperCase() + label.slice(1);
+                                        return (
+                                            <div key={key} className="flex flex-col sm:flex-row sm:items-center justify-between py-2 border-b border-slate-50 last:border-0">
+                                                <span className="text-sm font-semibold text-slate-500">{label}</span>
+                                                <span className="text-sm font-bold text-slate-900 text-right">{String(value) || "Not provided"}</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="text-center py-16">
+                                <div className="mx-auto w-16 h-16 rounded-full bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center mb-4">
+                                    <span className="text-slate-400 text-2xl">👤</span>
+                                </div>
+                                <p className="text-slate-500 font-medium">Select a user to view full details</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </section>
         </div>
     );
 }
