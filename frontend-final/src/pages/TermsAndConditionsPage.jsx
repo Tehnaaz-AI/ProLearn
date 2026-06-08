@@ -23,9 +23,6 @@ export function TermsAndConditionsPage({ setRoute }) {
                     <h3 className="text-xl font-bold">6. Changes to Terms</h3>
                     <p>We may revise these terms from time to time. By continuing to use the service after those revisions become effective, you agree to be bound by the revised terms.</p>
                     
-                    <div className="mt-8">
-                        <button className="btn" onClick={() => setRoute("register")}>Back to Registration</button>
-                    </div>
                 </div>
             </Panel>
         </section>

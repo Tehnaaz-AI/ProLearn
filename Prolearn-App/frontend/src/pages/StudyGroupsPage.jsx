@@ -148,13 +148,17 @@ export function StudyGroupsPage({ user, api, courses, flash, setRoute }) {
     }
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-180px)]">
-            <div className="lg:col-span-1 space-y-4 flex flex-col">
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-140px)] animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto">
+            <div className="lg:col-span-1 space-y-6 flex flex-col">
+                <div className="relative overflow-hidden rounded-[2rem] bg-slate-950 p-6 text-white shadow-xl shadow-teal-900/20 shrink-0">
+                    <div className="absolute inset-0 bg-gradient-to-br from-teal-900/80 via-emerald-900/40 to-slate-900"></div>
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/10 rounded-full blur-2xl transform translate-x-1/2 -translate-y-1/2"></div>
+                    <div className="relative z-10 flex items-center justify-between">
                         <div>
-                            <h1 className="text-2xl font-black text-slate-900">Study Groups</h1>
-                            <p className="text-slate-500 text-sm">Learn together</p>
+                            <div className="inline-flex items-center gap-1.5 rounded-full bg-teal-500/20 border border-teal-400/30 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-teal-200 backdrop-blur-md mb-2">
+                                <UsersRound className="w-3 h-3" /> Connect
+                            </div>
+                            <h1 className="text-3xl font-black tracking-tight drop-shadow-sm">Study Groups</h1>
                         </div>
                         {user && (
                             <button

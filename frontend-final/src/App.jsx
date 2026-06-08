@@ -22,6 +22,7 @@ import { AdminApplications } from "./pages/admin/AdminApplications";
 import { AdminPayments } from "./pages/admin/AdminPayments";
 import { AdminCourses } from "./pages/admin/AdminCourses";
 import { TermsAndConditionsPage } from "./pages/TermsAndConditionsPage";
+import { PrivacyPage } from "./pages/PrivacyPage";
 import { QuizPage } from "./pages/QuizPage";
 import { CertificatePage } from "./pages/CertificatePage";
 import { AboutUsPage } from "./pages/AboutUsPage";
@@ -187,6 +188,7 @@ export function App() {
                     {route === "admin-payments" && user?.role === "admin" && <AdminPayments {...pageProps} />}
                     {route === "admin-courses" && user?.role === "admin" && <AdminCourses {...pageProps} openCourse={openCourse} />}
                     {route === "terms" && <TermsAndConditionsPage {...pageProps} />}
+                    {route === "privacy" && <PrivacyPage {...pageProps} />}
                     {route === "about" && <AboutUsPage {...pageProps} />}
                     {route === "contact" && <ContactPage {...pageProps} />}
                     {route === "connect" && <ConnectPage {...pageProps} />}

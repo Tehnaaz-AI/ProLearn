@@ -55,10 +55,28 @@ export function AdminUsers({ api, flash, user }) {
     }
     
     return (
-        <section className="grid gap-5 xl:grid-cols-[1fr_0.85fr]">
-            <Panel title="All users and instructors">
-                <List items={users} render={(u) => (
-                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-12 max-w-7xl mx-auto">
+            {/* Premium Header */}
+            <div className="relative overflow-hidden rounded-[2rem] bg-slate-950 p-8 sm:p-12 text-white shadow-2xl shadow-teal-900/20">
+                <div className="absolute inset-0 bg-gradient-to-br from-teal-900/80 via-slate-900 to-slate-950"></div>
+                <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
+                
+                <div className="relative z-10 flex items-center justify-between">
+                    <div>
+                        <div className="inline-flex items-center gap-1.5 rounded-full bg-teal-500/20 border border-teal-400/30 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-teal-200 backdrop-blur-md mb-4">
+                            Admin Controls
+                        </div>
+                        <h1 className="text-4xl sm:text-5xl font-black tracking-tight drop-shadow-sm">
+                            User Management
+                        </h1>
+                    </div>
+                </div>
+            </div>
+
+            <section className="grid gap-5 xl:grid-cols-[1fr_0.85fr]">
+                <Panel title="All users and instructors">
+                    <List items={users} render={(u) => (
+                        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between p-2">
                         <div>
                             <strong>{u.username}</strong>
                             <p className="text-sm text-slate-600">{u.email} | {u.role} | {u.status}</p>
@@ -87,5 +105,6 @@ export function AdminUsers({ api, flash, user }) {
                 ) : <p className="text-slate-500">Open a user to view details except password.</p>}
             </Panel>
         </section>
+        </div>
     );
 }

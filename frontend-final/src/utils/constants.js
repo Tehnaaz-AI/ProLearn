@@ -1,2 +1,2 @@
-export const API = "http://localhost:8002/api";
-export const SERVER = "http://localhost:8002";
+export const SERVER = import.meta.env.VITE_API_BASE_URL;
+export const API = `${SERVER}/api`;

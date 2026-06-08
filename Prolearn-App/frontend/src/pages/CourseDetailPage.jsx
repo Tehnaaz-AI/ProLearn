@@ -217,17 +217,22 @@ export function CourseDetailPage({ course, user, api, flash, refresh, setRoute }
     }
 
     return (
-        <div className="space-y-6">
-            <section className="panel overflow-hidden">
-                <div className="grid gap-6 lg:grid-cols-[1.4fr_0.8fr]">
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-12 max-w-7xl mx-auto">
+            <section className="relative overflow-hidden rounded-[2rem] bg-slate-950 p-8 sm:p-12 text-white shadow-2xl shadow-teal-900/20">
+                <div className="absolute inset-0 bg-gradient-to-br from-teal-900/80 via-emerald-900/40 to-slate-900"></div>
+                <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
+                
+                <div className="relative z-10 grid gap-8 lg:grid-cols-[1.4fr_0.8fr] items-start">
                     <div>
-                        <span className={isPaid(course) ? "tag-amber" : "tag-teal"}>{isPaid(course) ? `Paid INR ${course.price}` : "Free"}</span>
-                        <h2 className="mt-4 text-4xl font-black">{course.title}</h2>
-                        <p className="mt-3 text-slate-600">{course.description || "Course details not available."}</p>
-                        <div className="mt-5 flex flex-wrap gap-3">
+                        <span className={isPaid(course) ? "inline-flex rounded-full bg-amber-500/20 border border-amber-400/30 px-3 py-1 text-xs font-black uppercase tracking-widest text-amber-200 backdrop-blur-md" : "inline-flex rounded-full bg-teal-500/20 border border-teal-400/30 px-3 py-1 text-xs font-black uppercase tracking-widest text-teal-200 backdrop-blur-md"}>
+                            {isPaid(course) ? `Premium INR ${course.price}` : "Free Course"}
+                        </span>
+                        <h2 className="mt-5 text-4xl sm:text-5xl font-black tracking-tight drop-shadow-sm leading-tight">{course.title}</h2>
+                        <p className="mt-4 text-slate-300 font-medium text-lg leading-relaxed max-w-2xl">{course.description || "Course details not available."}</p>
+                        <div className="mt-8 flex flex-wrap gap-4">
                             {!isInstructor && !isAdmin && (
                                 <button 
-                                    className="btn" 
+                                    className={locked ? "btn bg-teal-500 text-slate-950 hover:bg-teal-400 px-8" : "btn-light opacity-80 cursor-default px-8"} 
                                     onClick={locked ? enroll : undefined}
                                     disabled={!locked}
                                 >
@@ -238,34 +243,36 @@ export function CourseDetailPage({ course, user, api, flash, refresh, setRoute }
                                 <>
                                     {!certificate && !hasAttemptedQuiz && (
                                         <button 
-                                            className={`btn-secondary ${!allLessonsWatched ? "opacity-50 cursor-not-allowed" : ""}`}
+                                            className={`btn-ghost ${!allLessonsWatched ? "opacity-50 cursor-not-allowed" : ""}`}
                                             onClick={() => allLessonsWatched && setRoute(`quiz/${course.id}`)}
                                             disabled={!allLessonsWatched}
                                         >
-                                            Take Quiz {!allLessonsWatched && "(complete all lessons first)"}
+                                            Take Quiz {!allLessonsWatched && "(watch all lessons first)"}
                                         </button>
                                     )}
                                     {!certificate && hasAttemptedQuiz && (
-                                        <button className="btn-secondary" onClick={() => setRoute(`quiz/${course.id}`)}>
+                                        <button className="btn-ghost" onClick={() => setRoute(`quiz/${course.id}`)}>
                                             Take Quiz Again
                                         </button>
                                     )}
                                     {certificate && (
-                                        <button className="btn-secondary" onClick={() => setRoute(`quiz/${course.id}`)}>
+                                        <button className="btn-ghost" onClick={() => setRoute(`quiz/${course.id}`)}>
                                             Take Quiz Again
                                         </button>
                                     )}
                                     {certificate && (
-                                        <button className="btn" onClick={() => setRoute(`certificate/${course.id}`)}>View Certificate</button>
+                                        <button className="btn bg-amber-500 text-slate-950 hover:bg-amber-400 px-8" onClick={() => setRoute(`certificate/${course.id}`)}>View Certificate</button>
                                     )}
                                 </>
                             )}
                         </div>
                     </div>
-                    <div className="rounded-3xl bg-slate-950 p-5 text-white">
-                        <div className="text-sm text-slate-300">Course access</div>
-                        <div className="mt-2 text-2xl font-black">{locked ? "Locked preview" : "Unlocked"}</div>
-                        <p className="mt-3 text-sm leading-6 text-slate-300">Lessons, videos, quizzes, and doubts are available after enrollment. Course owners can always access their own content.</p>
+                    <div className="rounded-3xl bg-white/10 backdrop-blur-md border border-white/10 p-6 sm:p-8 text-white shadow-xl">
+                        <div className="text-xs font-black uppercase tracking-widest text-teal-200 mb-2">Course Status</div>
+                        <div className="text-3xl font-black drop-shadow-sm">{locked ? "Locked Preview" : "Unlocked Access"}</div>
+                        <p className="mt-4 text-sm font-medium leading-relaxed text-slate-300">
+                            Lessons, videos, quizzes, and doubts are available after enrollment. Course owners can always access their own content.
+                        </p>
                     </div>
                 </div>
             </section>

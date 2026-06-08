@@ -1,33 +1,120 @@
-# ProLearn MERN Backend
+# ProLearn Backend
 
-Node.js + Express + MongoDB backend for the online learning platform.
+This is the backend service for ProLearn. It handles authentication, course management, enrollments, certificates, payments, uploads, and API services for the platform.
 
-## Setup
+## Features
 
-```powershell
-cd backend
-copy .env.example .env
-npm.cmd install
-npm.cmd run dev
+### Authentication
+
+- JWT-based authentication
+- Role-based authorization
+- Protected API routes
+- Student, Instructor, and Admin roles
+
+### Course Management
+
+- Create and manage courses
+- Nested sections and lectures
+- Enrollment system
+- Progress tracking
+
+### Learning Features
+
+- Quiz support
+- Certificate generation
+- XP and leaderboard integration
+
+### Payment Integration
+
+- Razorpay payment gateway
+- Commission management
+
+### Media Uploads
+
+- Cloudinary integration
+- Course thumbnail uploads
+- Lecture content uploads
+
+## Tech Stack
+
+- Node.js
+- Express.js
+- MongoDB
+- Mongoose
+- JWT
+- Cloudinary
+- Razorpay
+
+## Project Structure
+
+```plaintext
+backend/
+
+├── src/
+├── uploads/
+├── server.js
+├── package.json
+├── .env.example
+└── README.md
 ```
 
-The API runs at `http://localhost:8000`.
+## Installation
 
-Make sure MongoDB is running locally, or update `MONGO_URI` in `.env`.
+### Install Dependencies
 
-Seeded accounts are created automatically on first start:
+```bash
+npm install
+```
 
-- Admin: `admin@ProLearn.local` / `Admin@123`
-- Instructor: `instructor@ProLearn.local` / `Instructor@123`
+## Environment Variables
 
-The seed data includes two courses: one free course and one paid course.
+Create a `.env` file inside the backend directory.
 
-## Payment Note
+Example:
 
-The local payment flow creates mock Razorpay-style order IDs and verifies them for demo use. Paid courses record a 95% instructor payout and a 5% admin commission. For production, add real Razorpay Checkout on the frontend and verify Razorpay signatures before marking payments as paid.
+```env
+PORT=
+MONGO_URI=
+JWT_SECRET=
+ADMIN_EMAIL=
+ADMIN_PASSWORD=
+RAZORPAY_KEY_ID=
+RAZORPAY_KEY_SECRET=
+COMMISSION_RATE=
+INSTRUCTOR_UPI=
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+```
 
-If `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` are set, the backend creates real Razorpay orders and verifies the signature sent back from Checkout. A QR data URL is also returned for paid-course payment.
+## Run Development Server
 
-## Instructor Videos
+```bash
+npm run dev
+```
 
-Instructors can attach video links in lesson JSON and upload video files through `POST /api/courses/:id/videos`. Uploaded files are served from `/uploads/videos/...`.
+## Run Production Server
+
+```bash
+npm start
+```
+
+## Security Recommendations
+
+- Keep environment variables private
+- Restrict CORS origins
+- Validate uploads
+- Enable rate limiting
+- Rotate API secrets regularly
+
+## Deployment
+
+Recommended deployment stack:
+
+- Backend Hosting: Render
+- Database: MongoDB Atlas
+- Media Storage: Cloudinary
+
+## License
+
+This project is for educational and development purposes.

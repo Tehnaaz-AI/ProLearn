@@ -8,13 +8,27 @@ import { SectionHeader } from "../../components/ui/SectionHeader";
 export function AdminPayments({ api, flash }) {
     const [payments, setPayments] = useState([]);
     const [revenueStats, setRevenueStats] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        setLoading(true);
         Promise.all([
             api("/admin/payments").then((data) => setPayments(data.payments || [])),
             api("/admin/revenue-stats").then((data) => setRevenueStats(data))
-        ]).catch((err) => flash(err.message, "error"));
+        ]).catch((err) => flash(err.message, "error"))
+        .finally(() => setLoading(false));
     }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="text-center">
+                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mb-4"></div>
+                    <p className="text-slate-600 font-semibold">Loading payment data...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">

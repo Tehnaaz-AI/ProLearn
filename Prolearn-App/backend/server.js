@@ -21,7 +21,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 app.use(
   cors({
-    origin: [/\.vercel\.app$/],
+    origin: /\.vercel\.app$/,
     credentials: true,
   })
 );

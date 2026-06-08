@@ -112,10 +112,23 @@ export function LeaderboardPage({ user, api, flash }) {
     };
 
     return (
-        <div className="space-y-6">
-            <div>
-                <h1 className="text-3xl font-black text-slate-900">Leaderboard</h1>
-                <p className="text-slate-500 mt-1">Top performers across all courses</p>
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-12 max-w-5xl mx-auto">
+            {/* Premium Header */}
+            <div className="relative overflow-hidden rounded-[2rem] bg-slate-950 p-8 sm:p-12 text-white shadow-2xl shadow-teal-900/20">
+                <div className="absolute inset-0 bg-gradient-to-br from-teal-900/80 via-emerald-900/40 to-slate-900"></div>
+                <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
+                
+                <div className="relative z-10 text-center">
+                    <div className="inline-flex items-center gap-1.5 rounded-full bg-teal-500/20 border border-teal-400/30 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-teal-200 backdrop-blur-md mb-4">
+                        <Trophy className="w-3.5 h-3.5" /> Global Rankings
+                    </div>
+                    <h1 className="text-4xl sm:text-5xl font-black tracking-tight drop-shadow-sm mb-3">
+                        Leaderboard
+                    </h1>
+                    <p className="text-slate-300 font-medium text-base max-w-2xl leading-relaxed mx-auto">
+                        See how you stack up against top performers across all courses. Earn XP by completing lessons and engaging with the community.
+                    </p>
+                </div>
             </div>
 
             {analytics?.topPerformer && (

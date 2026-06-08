@@ -120,10 +120,23 @@ export function CreateCourse({ api, flash, loadCourses, setRoute }) {
     }
 
     return (
-        <section className="mx-auto max-w-4xl space-y-6">
-            <div className="panel bg-slate-950 text-white">
-                <div className="pill">Create Course</div>
-                <h2 className="mt-5 text-4xl font-black">Publish Your Course</h2>
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-12 max-w-5xl mx-auto">
+            {/* Premium Header */}
+            <div className="relative overflow-hidden rounded-[2rem] bg-slate-950 p-8 sm:p-12 text-white shadow-2xl shadow-teal-900/20">
+                <div className="absolute inset-0 bg-gradient-to-br from-teal-900/80 via-emerald-900/40 to-slate-900"></div>
+                <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
+                
+                <div className="relative z-10">
+                    <div className="inline-flex items-center gap-1.5 rounded-full bg-teal-500/20 border border-teal-400/30 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-teal-200 backdrop-blur-md mb-4">
+                        <Plus className="w-3.5 h-3.5" /> Course Creator
+                    </div>
+                    <h1 className="text-4xl sm:text-5xl font-black tracking-tight drop-shadow-sm mb-3">
+                        Publish Your Course
+                    </h1>
+                    <p className="text-slate-300 font-medium text-base max-w-2xl leading-relaxed">
+                        Design your curriculum, upload videos, and create quizzes to share your knowledge with students worldwide.
+                    </p>
+                </div>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -336,6 +349,6 @@ export function CreateCourse({ api, flash, loadCourses, setRoute }) {
                     )}
                 </button>
             </form>
-        </section>
+        </div>
     );
 }
