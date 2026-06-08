@@ -4,7 +4,8 @@ import { Loader2, Trash2, BookOpen, Clock, FileText } from "lucide-react";
 
 export function AdminCourses({ api, flash, openCourse }) {
     const [courses, setCourses] = useState([]);
-    const [isDeleting, setIsDeleting] = useState(null);
+    const [selectedCourseId, setSelectedCourseId] = useState("");
+    const [isDeleting, setIsDeleting] = useState({ course: null, lesson: null });
     const [loading, setLoading] = useState(true);
     
     const load = () => {
@@ -19,18 +20,38 @@ export function AdminCourses({ api, flash, openCourse }) {
         const reason = window.prompt("Please enter a reason for deleting this course:");
         if (!reason) return;
         
-        setIsDeleting(courseId);
+        setIsDeleting({ course: courseId, lesson: null });
         try {
             await api(`/courses/${courseId}`, { 
                 method: "DELETE", 
                 body: JSON.stringify({ reason }) 
             });
             flash("Course deleted.");
+            if (selectedCourseId === courseId) setSelectedCourseId("");
             await load();
         } catch (err) {
             flash(err.message, "error");
         } finally {
-            setIsDeleting(null);
+            setIsDeleting({ course: null, lesson: null });
+        }
+    }
+
+    async function deleteLesson(courseId, lessonIdx) {
+        const reason = window.prompt("Please enter a reason for deleting this lesson:");
+        if (!reason) return;
+        
+        setIsDeleting({ course: courseId, lesson: lessonIdx });
+        try {
+            await api(`/courses/${courseId}/lessons/${lessonIdx}`, { 
+                method: "DELETE", 
+                body: JSON.stringify({ reason }) 
+            });
+            flash("Lesson deleted.");
+            await load();
+        } catch (err) {
+            flash(err.message, "error");
+        } finally {
+            setIsDeleting({ course: null, lesson: null });
         }
     }
 
@@ -112,29 +133,61 @@ export function AdminCourses({ api, flash, openCourse }) {
                             <div className="flex gap-2">
                                 <button 
                                     className="flex-1 btn-secondary flex items-center justify-center gap-2 py-3 text-sm" 
+                                    onClick={() => setSelectedCourseId(selectedCourseId === course.id ? "" : course.id)}
+                                >
+                                    <FileText size={16} />
+                                    {selectedCourseId === course.id ? "Hide Lessons" : "Lessons"}
+                                </button>
+                                <button 
+                                    className="flex-1 btn-secondary flex items-center justify-center gap-2 py-3 text-sm" 
                                     onClick={() => openCourse(course.id)}
                                 >
                                     <BookOpen size={16} />
-                                    View
+                                    Open
                                 </button>
                                 <button 
                                     className="flex-1 btn-danger flex items-center justify-center gap-2 py-3 text-sm" 
                                     onClick={() => deleteCourse(course.id)}
-                                    disabled={isDeleting === course.id}
+                                    disabled={isDeleting.course === course.id}
                                 >
-                                    {isDeleting === course.id ? (
-                                        <>
-                                            <Loader2 className="animate-spin" size={16} />
-                                            Deleting
-                                        </>
+                                    {isDeleting.course === course.id ? (
+                                        <Loader2 className="animate-spin" size={16} />
                                     ) : (
-                                        <>
-                                            <Trash2 size={16} />
-                                            Delete
-                                        </>
+                                        <Trash2 size={16} />
                                     )}
                                 </button>
                             </div>
+                            
+                            {selectedCourseId === course.id && (
+                                <div className="mt-4 pt-4 border-t border-slate-100 space-y-3">
+                                    <h4 className="text-sm font-bold text-slate-900 mb-2">Course Lessons</h4>
+                                    {(!course.lessons || course.lessons.length === 0) && (
+                                        <p className="text-sm text-slate-500 italic">No lessons available.</p>
+                                    )}
+                                    {course.lessons?.map((lesson, idx) => (
+                                        <div key={idx} className="flex justify-between items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                                            <div className="flex-1 overflow-hidden">
+                                                <div className="flex items-center gap-2 font-bold text-slate-900 text-sm truncate">
+                                                    Lesson {idx + 1}: {lesson.title}
+                                                </div>
+                                                <p className="text-xs text-slate-500 mt-1 line-clamp-2">{lesson.content}</p>
+                                            </div>
+                                            <button 
+                                                className="btn-danger p-2 h-auto" 
+                                                onClick={() => deleteLesson(course.id, idx)}
+                                                disabled={isDeleting.course === course.id && isDeleting.lesson === idx}
+                                                title="Delete Lesson"
+                                            >
+                                                {isDeleting.course === course.id && isDeleting.lesson === idx ? (
+                                                    <Loader2 className="animate-spin" size={14} />
+                                                ) : (
+                                                    <Trash2 size={14} />
+                                                )}
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
                 ))}

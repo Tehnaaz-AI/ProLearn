@@ -171,11 +171,11 @@ export function StudyGroupsPage({ user, api, courses, flash, setRoute }) {
                         )}
                     </div>
 
-                    <div className="overflow-x-auto pb-2">
+                    <div className="overflow-x-auto pb-2 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none' }}>
                         <div className="flex gap-2">
                             <button
                                 onClick={() => setSelectedCourse("")}
-                                className={`shrink-0 px-4 py-2 rounded-2xl font-bold text-sm whitespace-nowrap transition-all ${selectedCourse === "" ? "bg-teal-700 text-white" : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"}`}
+                                className={`shrink-0 px-4 py-2 rounded-full font-bold text-sm whitespace-nowrap transition-all ${selectedCourse === "" ? "bg-teal-500 text-white shadow-lg shadow-teal-500/20" : "bg-white/10 text-slate-300 hover:bg-white/20 hover:text-white"}`}
                             >
                                 All Courses
                             </button>
@@ -183,7 +183,7 @@ export function StudyGroupsPage({ user, api, courses, flash, setRoute }) {
                                 <button
                                     key={course.id}
                                     onClick={() => setSelectedCourse(course.id)}
-                                    className={`shrink-0 px-4 py-2 rounded-2xl font-bold text-sm whitespace-nowrap transition-all ${selectedCourse === course.id ? "bg-teal-700 text-white" : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"}`}
+                                    className={`shrink-0 px-4 py-2 rounded-full font-bold text-sm whitespace-nowrap transition-all ${selectedCourse === course.id ? "bg-teal-500 text-white shadow-lg shadow-teal-500/20" : "bg-white/10 text-slate-300 hover:bg-white/20 hover:text-white"}`}
                                 >
                                     {course.title}
                                 </button>

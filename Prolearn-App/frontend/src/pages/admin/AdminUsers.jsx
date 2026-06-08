@@ -73,89 +73,117 @@ export function AdminUsers({ api, flash, user }) {
                 </div>
             </div>
 
-            <section className="grid gap-8 lg:grid-cols-[1.2fr_1fr]">
-                <div className="space-y-6">
-                    <div className="flex items-center justify-between mb-2">
-                        <h2 className="text-2xl font-black text-slate-900">All Users</h2>
-                        <span className="text-sm font-semibold text-slate-500">{users.length} total</span>
-                    </div>
-                    <div className="grid gap-4">
-                        {users.map(u => (
-                            <div key={u.id} className={`group relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl border transition-all duration-300 ${selected?.id === u.id ? "border-teal-500 bg-teal-50/50 shadow-md shadow-teal-500/10" : "border-slate-200 bg-white hover:border-teal-300 hover:shadow-lg hover:shadow-slate-200/50"}`}>
-                                <div className="flex items-center gap-4">
-                                    <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-full text-lg font-black shadow-inner ${u.status === "blocked" ? "bg-red-100 text-red-700" : "bg-teal-100 text-teal-700"}`}>
-                                        {u.username.charAt(0).toUpperCase()}
-                                    </div>
-                                    <div>
-                                        <div className="flex items-center gap-2">
-                                            <h3 className="font-bold text-slate-900 text-lg">{u.username}</h3>
-                                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${u.role === 'admin' ? 'bg-purple-100 text-purple-700' : u.role === 'instructor' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}`}>
-                                                {u.role}
-                                            </span>
-                                            {u.status === "blocked" && (
-                                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-100 text-red-700">Blocked</span>
-                                            )}
-                                        </div>
-                                        <p className="text-sm font-medium text-slate-500 mt-0.5">{u.email}</p>
-                                        {u.block_reason && <p className="text-xs font-semibold text-red-600 mt-1">Reason: {u.block_reason}</p>}
-                                    </div>
-                                </div>
-                                <div className="flex flex-wrap gap-2 sm:opacity-0 group-hover:opacity-100 transition-opacity focus-within:opacity-100">
-                                    <button className="btn-secondary py-1.5 px-3 text-xs" onClick={() => open(u.id)}>View</button>
-                                    {u.id !== user.id && u.status !== "blocked" && <button className="btn-danger py-1.5 px-3 text-xs bg-red-50 text-red-700 border-red-200 hover:bg-red-600 hover:text-white" onClick={() => block(u.id)}>Block</button>}
-                                    {u.id !== user.id && u.status === "blocked" && <button className="btn py-1.5 px-3 text-xs" onClick={() => unblock(u.id)}>Unblock</button>}
-                                    {u.id !== user.id && <button className="btn-danger py-1.5 px-3 text-xs" onClick={() => deleteUser(u.id)}>Delete</button>}
-                                </div>
-                            </div>
-                        ))}
-                        {users.length === 0 && (
-                            <div className="text-center py-12 bg-white rounded-2xl border border-slate-200">
-                                <p className="text-slate-500 font-medium">No users found.</p>
-                            </div>
-                        )}
-                    </div>
+            <section className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
+                <div className="p-6 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                    <h2 className="text-xl font-black text-slate-900">Registered Users</h2>
+                    <span className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-teal-100 text-teal-800 text-sm font-bold">
+                        {users.length} Total
+                    </span>
                 </div>
-
-                <div className="lg:sticky lg:top-24 h-fit">
-                    <div className="rounded-3xl bg-white border border-slate-200 p-6 sm:p-8 shadow-xl shadow-slate-200/40">
-                        <h2 className="text-xl font-black text-slate-900 mb-6">User Details</h2>
-                        {selected ? (
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-4 pb-6 border-b border-slate-100 mb-6">
-                                    <div className="grid h-16 w-16 place-items-center rounded-2xl bg-gradient-to-br from-teal-500 to-teal-700 text-2xl font-black text-white shadow-lg shadow-teal-500/30">
-                                        {selected.username.charAt(0).toUpperCase()}
-                                    </div>
-                                    <div>
-                                        <h3 className="text-2xl font-black text-slate-900">{selected.username}</h3>
-                                        <p className="text-slate-500 font-medium">{selected.email}</p>
-                                    </div>
-                                </div>
-                                <div className="grid gap-3">
-                                    {Object.entries(selected).filter(([key]) => 
-                                        !["password", "passwordHash", "_id", "id", "created_at", "createdAt", "updatedAt", "enrollments", "lessons", "completedLessons", "totalEnrollments", "username", "email"].includes(key)
-                                    ).map(([key, value]) => {
-                                        let label = key.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim();
-                                        label = label.charAt(0).toUpperCase() + label.slice(1);
-                                        return (
-                                            <div key={key} className="flex flex-col sm:flex-row sm:items-center justify-between py-2 border-b border-slate-50 last:border-0">
-                                                <span className="text-sm font-semibold text-slate-500">{label}</span>
-                                                <span className="text-sm font-bold text-slate-900 text-right">{String(value) || "Not provided"}</span>
+                
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="bg-slate-50 border-b border-slate-200">
+                                <th className="p-4 text-xs font-black uppercase tracking-wider text-slate-500 whitespace-nowrap">User</th>
+                                <th className="p-4 text-xs font-black uppercase tracking-wider text-slate-500 whitespace-nowrap">Contact</th>
+                                <th className="p-4 text-xs font-black uppercase tracking-wider text-slate-500 whitespace-nowrap">Role</th>
+                                <th className="p-4 text-xs font-black uppercase tracking-wider text-slate-500 whitespace-nowrap">Status</th>
+                                <th className="p-4 text-xs font-black uppercase tracking-wider text-slate-500 text-right whitespace-nowrap">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                            {users.map(u => (
+                                <tr key={u.id} className={`group hover:bg-slate-50/80 transition-colors ${selected?.id === u.id ? 'bg-teal-50/30' : ''}`}>
+                                    <td className="p-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-full text-sm font-black shadow-inner ${u.status === "blocked" ? "bg-red-100 text-red-700" : "bg-teal-100 text-teal-700"}`}>
+                                                {u.username.charAt(0).toUpperCase()}
                                             </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="text-center py-16">
-                                <div className="mx-auto w-16 h-16 rounded-full bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center mb-4">
-                                    <span className="text-slate-400 text-2xl">👤</span>
-                                </div>
-                                <p className="text-slate-500 font-medium">Select a user to view full details</p>
-                            </div>
-                        )}
-                    </div>
+                                            <div className="font-bold text-slate-900">{u.username}</div>
+                                        </div>
+                                    </td>
+                                    <td className="p-4">
+                                        <div className="text-sm font-medium text-slate-500">{u.email}</div>
+                                    </td>
+                                    <td className="p-4">
+                                        <span className={`inline-flex px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${u.role === 'admin' ? 'bg-purple-100 text-purple-700' : u.role === 'instructor' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}`}>
+                                            {u.role}
+                                        </span>
+                                    </td>
+                                    <td className="p-4">
+                                        {u.status === "blocked" ? (
+                                            <div>
+                                                <span className="inline-flex px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-red-100 text-red-700">Blocked</span>
+                                                {u.block_reason && <div className="text-[10px] text-red-500 mt-1 max-w-[120px] truncate" title={u.block_reason}>Reason: {u.block_reason}</div>}
+                                            </div>
+                                        ) : (
+                                            <span className="inline-flex px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-700">Active</span>
+                                        )}
+                                    </td>
+                                    <td className="p-4">
+                                        <div className="flex items-center justify-end gap-2">
+                                            <button className="btn-secondary py-1.5 px-3 text-xs whitespace-nowrap" onClick={() => open(u.id)}>View Details</button>
+                                            {u.id !== user.id && u.status !== "blocked" && <button className="btn-danger py-1.5 px-3 text-xs bg-red-50 text-red-700 border-red-200 hover:bg-red-600 hover:text-white whitespace-nowrap" onClick={() => block(u.id)}>Block</button>}
+                                            {u.id !== user.id && u.status === "blocked" && <button className="btn py-1.5 px-3 text-xs whitespace-nowrap" onClick={() => unblock(u.id)}>Unblock</button>}
+                                            {u.id !== user.id && <button className="btn-danger py-1.5 px-3 text-xs whitespace-nowrap" onClick={() => deleteUser(u.id)}>Delete</button>}
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                            {users.length === 0 && (
+                                <tr>
+                                    <td colSpan="5" className="p-12 text-center text-slate-500 font-medium">
+                                        No users found in the system.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
                 </div>
             </section>
+
+            {/* Selected User Modal */}
+            {selected && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+                        <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                            <h3 className="text-xl font-black text-slate-900">User Profile</h3>
+                            <button onClick={() => setSelected(null)} className="p-2 rounded-full hover:bg-slate-200 text-slate-500 transition-colors">
+                                ✕
+                            </button>
+                        </div>
+                        <div className="p-6 overflow-y-auto flex-1">
+                            <div className="flex items-center gap-5 pb-6 border-b border-slate-100 mb-6">
+                                <div className="grid h-20 w-20 place-items-center rounded-2xl bg-gradient-to-br from-teal-500 to-teal-700 text-3xl font-black text-white shadow-lg shadow-teal-500/30">
+                                    {selected.username.charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                    <h3 className="text-2xl font-black text-slate-900">{selected.username}</h3>
+                                    <p className="text-slate-500 font-medium text-lg">{selected.email}</p>
+                                </div>
+                            </div>
+                            <div className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
+                                {Object.entries(selected).filter(([key]) => 
+                                    !["password", "passwordHash", "_id", "id", "created_at", "createdAt", "updatedAt", "enrollments", "lessons", "completedLessons", "totalEnrollments", "username", "email"].includes(key)
+                                ).map(([key, value]) => {
+                                    let label = key.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim();
+                                    label = label.charAt(0).toUpperCase() + label.slice(1);
+                                    return (
+                                        <div key={key} className="flex flex-col py-2 border-b border-slate-50 last:border-0">
+                                            <span className="text-xs font-black uppercase tracking-wider text-slate-400 mb-1">{label}</span>
+                                            <span className="text-sm font-bold text-slate-900 break-words">{String(value) || "Not provided"}</span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                        <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end">
+                            <button onClick={() => setSelected(null)} className="btn-secondary">Close</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
