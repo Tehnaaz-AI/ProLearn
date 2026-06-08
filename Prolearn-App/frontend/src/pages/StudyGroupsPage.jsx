@@ -171,7 +171,7 @@ export function StudyGroupsPage({ user, api, courses, flash, setRoute }) {
                         )}
                     </div>
 
-                    <div className="overflow-x-auto pb-4 pt-2 custom-scrollbar">
+                    <div className="relative z-10 overflow-x-auto pb-4 pt-2 custom-scrollbar">
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setSelectedCourse("")}
