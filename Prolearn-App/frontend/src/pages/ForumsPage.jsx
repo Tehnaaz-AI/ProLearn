@@ -164,11 +164,11 @@ export function ForumsPage({ user, api, courses, enrollments, flash, setRoute })
                         </button>
                     )}
                 </div>
-                <div className="pb-2">
-                    <div className="flex flex-wrap gap-2">
+                <div className="overflow-x-auto pb-4 pt-2 custom-scrollbar">
+                    <div className="flex gap-3">
                         <button
                             onClick={() => setSelectedCourse("")}
-                            className={`shrink-0 px-5 py-2 rounded-2xl font-bold text-sm whitespace-nowrap transition-all cursor-pointer active:scale-95 ${selectedCourse === "" ? "bg-teal-600 text-white shadow-md ring-2 ring-teal-500 ring-offset-2" : "bg-white border-2 border-slate-200 text-slate-600 hover:border-teal-400 hover:text-teal-700 hover:bg-teal-50/50 shadow-sm"}`}
+                            className={`shrink-0 px-5 py-2.5 rounded-2xl font-bold text-sm whitespace-nowrap transition-all cursor-pointer active:scale-95 ${selectedCourse === "" ? "bg-teal-600 text-white shadow-md ring-2 ring-teal-500 ring-offset-2" : "bg-white border-2 border-slate-200 text-slate-600 hover:border-teal-400 hover:text-teal-700 hover:bg-teal-50/50 shadow-sm"}`}
                         >
                             All Courses
                         </button>
@@ -176,7 +176,7 @@ export function ForumsPage({ user, api, courses, enrollments, flash, setRoute })
                                 <button
                                     key={course.id}
                                     onClick={() => setSelectedCourse(course.id)}
-                                    className={`shrink-0 px-5 py-2 rounded-2xl font-bold text-sm whitespace-nowrap transition-all cursor-pointer active:scale-95 ${selectedCourse === course.id ? "bg-teal-600 text-white shadow-md ring-2 ring-teal-500 ring-offset-2" : "bg-white border-2 border-slate-200 text-slate-600 hover:border-teal-400 hover:text-teal-700 hover:bg-teal-50/50 shadow-sm"}`}
+                                    className={`shrink-0 px-5 py-2.5 rounded-2xl font-bold text-sm whitespace-nowrap transition-all cursor-pointer active:scale-95 ${selectedCourse === course.id ? "bg-teal-600 text-white shadow-md ring-2 ring-teal-500 ring-offset-2" : "bg-white border-2 border-slate-200 text-slate-600 hover:border-teal-400 hover:text-teal-700 hover:bg-teal-50/50 shadow-sm"}`}
                                 >
                                     {course.title}
                                 </button>
