@@ -17,7 +17,8 @@ const userSchema = new mongoose.Schema(
     qualifications: String,
     experience: String,
     bio: String,
-    paymentDetails: String,
+    payoutMethod: { type: String, enum: ["bank", "upi", "mobile"] },
+    payoutDetails: { type: String, trim: true },
     profilePictureUrl: { type: String, trim: true },
   },
   { timestamps: true }

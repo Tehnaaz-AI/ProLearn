@@ -7,8 +7,11 @@ import Enrollment from "../models/Enrollment.js";
 import { protect, allow } from "../middleware/auth.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import { courseDto } from "../utils/formatters.js";
+import multer from "multer";
+import cloudinary from "../config/cloudinary.js";
 
 const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
 router.get("/instructor/status", protect, allow("student"), asyncHandler(async (req, res) => {
   const app = await InstructorApplication.findOne({ user: req.user._id }).sort({ createdAt: -1 });
@@ -21,7 +24,7 @@ router.get("/instructor/status", protect, allow("student"), asyncHandler(async (
   });
 }));
 
-router.post("/instructor/apply", protect, allow("student"), asyncHandler(async (req, res) => {
+router.post("/instructor/apply", protect, allow("student"), upload.single("sample_video"), asyncHandler(async (req, res) => {
   const {
     name,
     email,
@@ -31,13 +34,35 @@ router.post("/instructor/apply", protect, allow("student"), asyncHandler(async (
     experience,
     bio,
     sample_courses,
-    sample_videos,
-    payment_details,
+    payout_method,
+    payout_details,
   } = req.body;
-  if (![name, email, dob, education, qualifications, experience, bio, sample_courses, sample_videos, payment_details].every(Boolean)) {
+  if (![name, email, dob, education, qualifications, experience, bio, sample_courses, payout_method, payout_details].every(Boolean)) {
     res.status(400);
     throw new Error("All instructor application fields are required.");
   }
+  if (!req.file) {
+    res.status(400);
+    throw new Error("Sample video file is required.");
+  }
+
+  let videoUrl = null;
+  await new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        resource_type: "video",
+        folder: "ProLearn/applications",
+      },
+      (error, result) => {
+        if (error) reject(error);
+        else {
+          videoUrl = result.playback_url || result.secure_url;
+          resolve();
+        }
+      }
+    );
+    uploadStream.end(req.file.buffer);
+  });
 
   await InstructorApplication.create({
     user: req.user._id,
@@ -49,8 +74,9 @@ router.post("/instructor/apply", protect, allow("student"), asyncHandler(async (
     experience,
     bio,
     sampleCourses: sample_courses,
-    sampleVideos: sample_videos,
-    paymentDetails: payment_details,
+    sampleVideos: videoUrl,
+    payoutMethod: payout_method,
+    payoutDetails: payout_details,
   });
   res.status(201).json({ message: "Application sent for admin approval." });
 }));
@@ -72,7 +98,8 @@ router.get("/instructor/applications", protect, allow("admin"), asyncHandler(asy
       bio: app.bio,
       sample_courses: app.sampleCourses,
       sample_videos: app.sampleVideos,
-      payment_details: app.paymentDetails,
+      payout_method: app.payoutMethod,
+      payout_details: app.payoutDetails,
       status: app.status,
       admin_reason: app.adminReason,
       created_at: app.createdAt,
@@ -96,7 +123,8 @@ router.post("/instructor/applications/:id/:action", protect, allow("admin"), asy
     app.user.qualifications = app.qualifications;
     app.user.experience = app.experience;
     app.user.bio = app.bio;
-    app.user.paymentDetails = app.paymentDetails;
+    app.user.payoutMethod = app.payoutMethod;
+    app.user.payoutDetails = app.payoutDetails;
     await app.user.save();
     app.status = "approved";
     app.adminReason = req.body.reason || "Approved";

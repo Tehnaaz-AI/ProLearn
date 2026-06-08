@@ -906,7 +906,7 @@ router.get("/courses/:id/certificate", protect, asyncHandler(async (req, res) =>
 }));
 
 router.post("/courses/:id/payments/create", protect, asyncHandler(async (req, res) => {
-  const course = await Course.findById(req.params.id);
+  const course = await Course.findById(req.params.id).populate("instructor");
   if (!course) {
     res.status(404);
     throw new Error("Course not found.");
@@ -933,8 +933,16 @@ router.post("/courses/:id/payments/create", protect, asyncHandler(async (req, re
     });
     providerOrderId = order.id;
   }
-  const upi = process.env.INSTRUCTOR_UPI || "sampleinstructor@upi";
-  const qrPayload = `upi://pay?pa=${encodeURIComponent(upi)}&pn=${encodeURIComponent("ProLearn Instructor")}&am=${encodeURIComponent(String(course.price))}&cu=INR&tn=${encodeURIComponent(course.title)}`;
+  let upi = process.env.INSTRUCTOR_UPI || "sampleinstructor@upi";
+  if (course.instructor && ["upi", "mobile"].includes(course.instructor.payoutMethod) && course.instructor.payoutDetails) {
+    upi = course.instructor.payoutDetails;
+  } else if (course.instructor && course.instructor.payoutMethod === "bank") {
+    // Note: A true bank transfer QR might differ, but we fallback to a mock UPI or the admin default
+    // We will just append the bank details to the note instead of encoding in UPI ID directly.
+    upi = process.env.INSTRUCTOR_UPI || "banktransfer@upi";
+  }
+  
+  const qrPayload = `upi://pay?pa=${encodeURIComponent(upi)}&pn=${encodeURIComponent(course.instructor ? course.instructor.firstName + " " + course.instructor.lastName : "ProLearn Instructor")}&am=${encodeURIComponent(String(course.price))}&cu=INR&tn=${encodeURIComponent(course.title)}`;
   const qrCode = await QRCode.toDataURL(qrPayload);
 
   const payment = await Payment.create({
@@ -954,7 +962,7 @@ router.post("/courses/:id/payments/create", protect, asyncHandler(async (req, re
     currency: "INR",
     qr_payload: qrPayload,
     qr_code: qrCode,
-    note: process.env.RAZORPAY_KEY_ID ? "Use Razorpay Checkout with this order id." : "Razorpay keys missing, using local mock order plus QR payload.",
+    note: process.env.RAZORPAY_KEY_ID ? "Use Razorpay Checkout with this order id." : `Razorpay keys missing. Mock order. Instructor uses: ${course.instructor?.payoutMethod || "default"}`,
   });
 }));
 

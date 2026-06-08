@@ -79,18 +79,76 @@ export function InstructorApplication({ api, flash, user }) {
             
             <div className="panel bg-white/60 backdrop-blur-md border border-white shadow-xl shadow-slate-200/40 p-6 sm:p-10 rounded-[2rem]">
                 <h3 className="text-2xl font-black text-slate-900 mb-8 pb-4 border-b border-slate-100">Application Details</h3>
-                <SmartForm button="Submit Application" fields={[
-                    ["name", "Full name"],
-                    ["email", "Email ID", "email"],
-                    ["dob", "Date of birth", "date"],
-                    ["education", "Education"],
-                    ["qualifications", "Qualifications details", "textarea"],
-                    ["experience", "Teaching or industry experience", "textarea"],
-                    ["bio", "Instructor bio", "textarea"],
-                    ["sample_courses", "Sample courses", "textarea"],
-                    ["sample_videos", "Sample video links or upload references", "textarea"],
-                    ["payment_details", "UPI ID or bank account details", "textarea"],
-                ]} defaults={autoDefaults} onSubmit={submit} />
+                <form className="space-y-6" onSubmit={async (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.target);
+                    await api("/instructor/apply", { method: "POST", body: formData });
+                    flash("Application submitted for admin approval.");
+                    api("/instructor/status").then((data) => setAppStatus(data.application));
+                }}>
+                    <div className="grid gap-6 sm:grid-cols-2">
+                        <div className="space-y-2 group">
+                            <label className="text-xs font-black uppercase tracking-widest text-slate-500 group-focus-within:text-teal-600 transition-colors">Full Name <span className="text-red-500">*</span></label>
+                            <input name="name" className="input h-12 pl-4" defaultValue={autoDefaults.name} required />
+                        </div>
+                        <div className="space-y-2 group">
+                            <label className="text-xs font-black uppercase tracking-widest text-slate-500 group-focus-within:text-teal-600 transition-colors">Email ID <span className="text-red-500">*</span></label>
+                            <input type="email" name="email" className="input h-12 pl-4" defaultValue={autoDefaults.email} required />
+                        </div>
+                        <div className="space-y-2 group">
+                            <label className="text-xs font-black uppercase tracking-widest text-slate-500 group-focus-within:text-teal-600 transition-colors">Date of Birth <span className="text-red-500">*</span></label>
+                            <input type="date" name="dob" className="input h-12 pl-4" defaultValue={autoDefaults.dob} required />
+                        </div>
+                        <div className="space-y-2 group">
+                            <label className="text-xs font-black uppercase tracking-widest text-slate-500 group-focus-within:text-teal-600 transition-colors">Education <span className="text-red-500">*</span></label>
+                            <input name="education" className="input h-12 pl-4" defaultValue={autoDefaults.education} required />
+                        </div>
+                        <div className="space-y-2 group sm:col-span-2">
+                            <label className="text-xs font-black uppercase tracking-widest text-slate-500 group-focus-within:text-teal-600 transition-colors">Qualifications Details <span className="text-red-500">*</span></label>
+                            <textarea name="qualifications" className="input min-h-[120px] p-4" defaultValue={autoDefaults.qualifications} required />
+                        </div>
+                        <div className="space-y-2 group sm:col-span-2">
+                            <label className="text-xs font-black uppercase tracking-widest text-slate-500 group-focus-within:text-teal-600 transition-colors">Teaching or Industry Experience <span className="text-red-500">*</span></label>
+                            <textarea name="experience" className="input min-h-[120px] p-4" defaultValue={autoDefaults.experience} required />
+                        </div>
+                        <div className="space-y-2 group sm:col-span-2">
+                            <label className="text-xs font-black uppercase tracking-widest text-slate-500 group-focus-within:text-teal-600 transition-colors">Instructor Bio <span className="text-red-500">*</span></label>
+                            <textarea name="bio" className="input min-h-[120px] p-4" defaultValue={autoDefaults.bio} required />
+                        </div>
+                        <div className="space-y-2 group sm:col-span-2">
+                            <label className="text-xs font-black uppercase tracking-widest text-slate-500 group-focus-within:text-teal-600 transition-colors">Sample Courses <span className="text-red-500">*</span></label>
+                            <textarea name="sample_courses" className="input min-h-[120px] p-4" defaultValue={autoDefaults.sample_courses} required />
+                        </div>
+                        <div className="space-y-2 group sm:col-span-2">
+                            <label className="text-xs font-black uppercase tracking-widest text-slate-500 group-focus-within:text-teal-600 transition-colors">Sample Video Upload <span className="text-red-500">*</span></label>
+                            <input type="file" name="sample_video" accept="video/*" className="input h-14 p-3 bg-slate-50 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100" required />
+                        </div>
+                        
+                        <div className="space-y-2 group">
+                            <label className="text-xs font-black uppercase tracking-widest text-slate-500 group-focus-within:text-teal-600 transition-colors">Payout Method <span className="text-red-500">*</span></label>
+                            <select name="payout_method" className="input h-12 pl-4 bg-white" required defaultValue={user?.payoutMethod || "upi"} onChange={(e) => {
+                                const detailsInput = document.getElementById('payout_details_input');
+                                if (e.target.value === 'bank') detailsInput.placeholder = "Account No, IFSC, Branch...";
+                                else if (e.target.value === 'upi') detailsInput.placeholder = "username@upi";
+                                else detailsInput.placeholder = "+91 9876543210";
+                            }}>
+                                <option value="upi">UPI ID</option>
+                                <option value="bank">Bank Details</option>
+                                <option value="mobile">Registered Mobile No</option>
+                            </select>
+                        </div>
+                        <div className="space-y-2 group">
+                            <label className="text-xs font-black uppercase tracking-widest text-slate-500 group-focus-within:text-teal-600 transition-colors">Payout Details <span className="text-red-500">*</span></label>
+                            <input id="payout_details_input" name="payout_details" className="input h-12 pl-4" placeholder="username@upi" defaultValue={user?.payoutDetails || ""} required />
+                        </div>
+                    </div>
+                    
+                    <div className="pt-4 flex justify-end gap-4 border-t border-slate-100 mt-6 pt-6">
+                        <button type="submit" className="btn h-14 px-8 sm:w-auto flex items-center justify-center gap-2 text-base">
+                            Submit Application <ArrowRight className="w-5 h-5" />
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     );

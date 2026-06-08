@@ -27,8 +27,8 @@ router.put("/me", protect, upload.single("profilePicture"), asyncHandler(async (
     qualifications,
     experience,
     bio,
-    payment_details,
-    paymentDetails,
+    payout_method,
+    payout_details,
   } = req.body;
   
   req.user.username = username !== undefined && username !== null && username !== "" ? username : req.user.username;
@@ -61,8 +61,10 @@ router.put("/me", protect, upload.single("profilePicture"), asyncHandler(async (
     });
   }
   
-  const payout = payment_details ?? paymentDetails;
-  if (payout !== undefined && req.user.role === "instructor") req.user.paymentDetails = payout;
+  if (["instructor", "admin"].includes(req.user.role)) {
+    if (payout_method !== undefined) req.user.payoutMethod = payout_method;
+    if (payout_details !== undefined) req.user.payoutDetails = payout_details;
+  }
 
   if (new_password) {
     const ok = await bcrypt.compare(current_password || "", req.user.passwordHash);

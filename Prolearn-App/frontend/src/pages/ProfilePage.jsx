@@ -18,7 +18,8 @@ export function Profile({ user, api, flash }) {
         qualifications: user.qualifications || "",
         experience: user.experience || "",
         bio: user.bio || "",
-        payment_details: user.payment_details || user.paymentDetails || "",
+        payout_method: user.payoutMethod || "upi",
+        payout_details: user.payoutDetails || "",
         new_password: ""
     });
 
@@ -37,7 +38,8 @@ export function Profile({ user, api, flash }) {
         if (formData.qualifications !== undefined) body.append("qualifications", formData.qualifications);
         if (formData.experience !== undefined) body.append("experience", formData.experience);
         if (formData.bio !== undefined) body.append("bio", formData.bio);
-        if (formData.payment_details) body.append("payment_details", formData.payment_details);
+        if (formData.payout_method) body.append("payout_method", formData.payout_method);
+        if (formData.payout_details) body.append("payout_details", formData.payout_details);
         
         if (profilePictureFile) {
             body.append("profilePicture", profilePictureFile);
@@ -217,7 +219,7 @@ export function Profile({ user, api, flash }) {
                                         <textarea className="input min-h-[140px]" placeholder="Detail your past roles, responsibilities, and achievements..." value={formData.experience} onChange={(e) => setFormData({...formData, experience: e.target.value})} />
                                     </div>
                                     
-                                    {user.role === "instructor" && (
+                                    {["instructor", "admin"].includes(user.role) && (
                                         <div className="mt-8 p-6 bg-gradient-to-br from-teal-50 to-emerald-50 rounded-2xl border border-teal-100/50">
                                             <div className="flex items-center gap-3 mb-4">
                                                 <div className="p-2 bg-teal-100 rounded-lg text-teal-700">
@@ -225,10 +227,23 @@ export function Profile({ user, api, flash }) {
                                                 </div>
                                                 <div>
                                                     <h4 className="font-black text-slate-900">Payment Information</h4>
-                                                    <p className="text-xs font-semibold text-teal-700">Required for instructor payouts</p>
+                                                    <p className="text-xs font-semibold text-teal-700">Required for payouts</p>
                                                 </div>
                                             </div>
-                                            <textarea className="input bg-white/80 border-teal-200 focus:border-teal-500 focus:ring-teal-200" placeholder="Enter your UPI ID or bank account details..." value={formData.payment_details} onChange={(e) => setFormData({...formData, payment_details: e.target.value})} />
+                                            <div className="space-y-4">
+                                                <div className="space-y-2">
+                                                    <label className="text-xs font-black uppercase tracking-widest text-teal-800">Payout Method</label>
+                                                    <select className="input bg-white/80 border-teal-200 focus:border-teal-500 focus:ring-teal-200 h-12 pl-4 w-full" value={formData.payout_method} onChange={(e) => setFormData({...formData, payout_method: e.target.value})}>
+                                                        <option value="upi">UPI ID</option>
+                                                        <option value="bank">Bank Details</option>
+                                                        <option value="mobile">Registered Mobile No</option>
+                                                    </select>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-xs font-black uppercase tracking-widest text-teal-800">Payout Details</label>
+                                                    <input className="input bg-white/80 border-teal-200 focus:border-teal-500 focus:ring-teal-200 h-12 pl-4 w-full" placeholder={formData.payout_method === 'bank' ? "Account No, IFSC..." : (formData.payout_method === 'upi' ? "username@upi" : "+91 9876543210")} value={formData.payout_details} onChange={(e) => setFormData({...formData, payout_details: e.target.value})} />
+                                                </div>
+                                            </div>
                                         </div>
                                     )}
                                 </div>

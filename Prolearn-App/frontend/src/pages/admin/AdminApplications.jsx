@@ -44,7 +44,8 @@ export function AdminApplications({ api, flash }) {
                         <Detail label="Education" value={app.education} />
                         <Detail label="Qualifications" value={app.qualifications} />
                         <Detail label="Experience" value={app.experience} />
-                        <Detail label="Payment" value={app.payment_details} />
+                        <Detail label="Payout Method" value={app.payout_method} />
+                        <Detail label="Payout Details" value={app.payout_details} />
                         <Detail label="Samples" value={app.sample_courses} />
                         <Detail label="Videos" value={app.sample_videos} />
                     </div>
