@@ -171,7 +171,7 @@ export function StudyGroupsPage({ user, api, courses, flash, setRoute }) {
                         )}
                     </div>
 
-                    <div className="overflow-x-auto pb-2 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none' }}>
+                    <div className="overflow-x-auto pb-2 custom-scrollbar">
                         <div className="flex gap-2">
                             <button
                                 onClick={() => setSelectedCourse("")}

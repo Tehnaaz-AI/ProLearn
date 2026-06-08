@@ -164,11 +164,11 @@ export function ForumsPage({ user, api, courses, enrollments, flash, setRoute })
                         </button>
                     )}
                 </div>
-                <div className="overflow-x-auto pb-2">
+                <div className="overflow-x-auto pb-2 custom-scrollbar">
                     <div className="flex gap-2">
                         <button
                             onClick={() => setSelectedCourse("")}
-                            className={`px-4 py-2 rounded-2xl font-bold text-sm whitespace-nowrap transition-all ${selectedCourse === "" ? "bg-teal-700 text-white" : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"}`}
+                            className={`shrink-0 px-4 py-2 rounded-2xl font-bold text-sm whitespace-nowrap transition-all ${selectedCourse === "" ? "bg-teal-700 text-white" : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"}`}
                         >
                             All Courses
                         </button>
@@ -176,7 +176,7 @@ export function ForumsPage({ user, api, courses, enrollments, flash, setRoute })
                             <button
                                 key={course.id}
                                 onClick={() => setSelectedCourse(course.id)}
-                                className={`px-4 py-2 rounded-2xl font-bold text-sm whitespace-nowrap transition-all ${selectedCourse === course.id ? "bg-teal-700 text-white" : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"}`}
+                                className={`shrink-0 px-4 py-2 rounded-2xl font-bold text-sm whitespace-nowrap transition-all ${selectedCourse === course.id ? "bg-teal-700 text-white" : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"}`}
                             >
                                 {course.title}
                             </button>
