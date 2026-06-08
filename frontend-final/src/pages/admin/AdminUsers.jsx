@@ -73,38 +73,117 @@ export function AdminUsers({ api, flash, user }) {
                 </div>
             </div>
 
-            <section className="grid gap-5 xl:grid-cols-[1fr_0.85fr]">
-                <Panel title="All users and instructors">
-                    <List items={users} render={(u) => (
-                        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between p-2">
-                        <div>
-                            <strong>{u.username}</strong>
-                            <p className="text-sm text-slate-600">{u.email} | {u.role} | {u.status}</p>
-                            {u.block_reason && <small className="text-red-700">Reason: {u.block_reason}</small>}
+            <section className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
+                <div className="p-6 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                    <h2 className="text-xl font-black text-slate-900">Registered Users</h2>
+                    <span className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-teal-100 text-teal-800 text-sm font-bold">
+                        {users.length} Total
+                    </span>
+                </div>
+                
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="bg-slate-50 border-b border-slate-200">
+                                <th className="p-4 text-xs font-black uppercase tracking-wider text-slate-500 whitespace-nowrap">User</th>
+                                <th className="p-4 text-xs font-black uppercase tracking-wider text-slate-500 whitespace-nowrap">Contact</th>
+                                <th className="p-4 text-xs font-black uppercase tracking-wider text-slate-500 whitespace-nowrap">Role</th>
+                                <th className="p-4 text-xs font-black uppercase tracking-wider text-slate-500 whitespace-nowrap">Status</th>
+                                <th className="p-4 text-xs font-black uppercase tracking-wider text-slate-500 text-right whitespace-nowrap">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                            {users.map(u => (
+                                <tr key={u.id} className={`group hover:bg-slate-50/80 transition-colors ${selected?.id === u.id ? 'bg-teal-50/30' : ''}`}>
+                                    <td className="p-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-full text-sm font-black shadow-inner ${u.status === "blocked" ? "bg-red-100 text-red-700" : "bg-teal-100 text-teal-700"}`}>
+                                                {u.username.charAt(0).toUpperCase()}
+                                            </div>
+                                            <div className="font-bold text-slate-900">{u.username}</div>
+                                        </div>
+                                    </td>
+                                    <td className="p-4">
+                                        <div className="text-sm font-medium text-slate-500">{u.email}</div>
+                                    </td>
+                                    <td className="p-4">
+                                        <span className={`inline-flex px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${u.role === 'admin' ? 'bg-purple-100 text-purple-700' : u.role === 'instructor' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}`}>
+                                            {u.role}
+                                        </span>
+                                    </td>
+                                    <td className="p-4">
+                                        {u.status === "blocked" ? (
+                                            <div>
+                                                <span className="inline-flex px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-red-100 text-red-700">Blocked</span>
+                                                {u.block_reason && <div className="text-[10px] text-red-500 mt-1 max-w-[120px] truncate" title={u.block_reason}>Reason: {u.block_reason}</div>}
+                                            </div>
+                                        ) : (
+                                            <span className="inline-flex px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-700">Active</span>
+                                        )}
+                                    </td>
+                                    <td className="p-4">
+                                        <div className="flex items-center justify-end gap-2">
+                                            <button className="btn-secondary py-1.5 px-3 text-xs whitespace-nowrap" onClick={() => open(u.id)}>View Details</button>
+                                            {u.id !== user.id && u.status !== "blocked" && <button className="btn-danger py-1.5 px-3 text-xs bg-red-50 text-red-700 border-red-200 hover:bg-red-600 hover:text-white whitespace-nowrap" onClick={() => block(u.id)}>Block</button>}
+                                            {u.id !== user.id && u.status === "blocked" && <button className="btn py-1.5 px-3 text-xs whitespace-nowrap" onClick={() => unblock(u.id)}>Unblock</button>}
+                                            {u.id !== user.id && <button className="btn-danger py-1.5 px-3 text-xs whitespace-nowrap" onClick={() => deleteUser(u.id)}>Delete</button>}
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                            {users.length === 0 && (
+                                <tr>
+                                    <td colSpan="5" className="p-12 text-center text-slate-500 font-medium">
+                                        No users found in the system.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            {/* Selected User Modal */}
+            {selected && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+                        <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                            <h3 className="text-xl font-black text-slate-900">User Profile</h3>
+                            <button onClick={() => setSelected(null)} className="p-2 rounded-full hover:bg-slate-200 text-slate-500 transition-colors">
+                                ✕
+                            </button>
                         </div>
-                        <div className="flex gap-2 flex-wrap">
-                            <button className="btn-secondary" onClick={() => open(u.id)}>Details</button>
-                            {u.id !== user.id && u.status !== "blocked" && <button className="btn-danger" onClick={() => block(u.id)}>Block</button>}
-                            {u.id !== user.id && u.status === "blocked" && <button className="btn" onClick={() => unblock(u.id)}>Unblock</button>}
-                            {u.id !== user.id && <button className="btn-danger" onClick={() => deleteUser(u.id)}>Delete</button>}
+                        <div className="p-6 overflow-y-auto flex-1">
+                            <div className="flex items-center gap-5 pb-6 border-b border-slate-100 mb-6">
+                                <div className="grid h-20 w-20 place-items-center rounded-2xl bg-gradient-to-br from-teal-500 to-teal-700 text-3xl font-black text-white shadow-lg shadow-teal-500/30">
+                                    {selected.username.charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                    <h3 className="text-2xl font-black text-slate-900">{selected.username}</h3>
+                                    <p className="text-slate-500 font-medium text-lg">{selected.email}</p>
+                                </div>
+                            </div>
+                            <div className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
+                                {Object.entries(selected).filter(([key]) => 
+                                    !["password", "passwordHash", "_id", "id", "created_at", "createdAt", "updatedAt", "enrollments", "lessons", "completedLessons", "totalEnrollments", "username", "email"].includes(key)
+                                ).map(([key, value]) => {
+                                    let label = key.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim();
+                                    label = label.charAt(0).toUpperCase() + label.slice(1);
+                                    return (
+                                        <div key={key} className="flex flex-col py-2 border-b border-slate-50 last:border-0">
+                                            <span className="text-xs font-black uppercase tracking-wider text-slate-400 mb-1">{label}</span>
+                                            <span className="text-sm font-bold text-slate-900 break-words">{String(value) || "Not provided"}</span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                        <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end">
+                            <button onClick={() => setSelected(null)} className="btn-secondary">Close</button>
                         </div>
                     </div>
-                )} />
-            </Panel>
-            <Panel title="Selected user details">
-                {selected ? (
-                    <div className="space-y-2">
-                        {Object.entries(selected).filter(([key]) => 
-                            !["password", "passwordHash", "_id", "id", "created_at", "createdAt", "updatedAt", "enrollments", "lessons", "completedLessons", "totalEnrollments"].includes(key)
-                        ).map(([key, value]) => {
-                            let label = key.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim();
-                            label = label.charAt(0).toUpperCase() + label.slice(1);
-                            return <Detail key={key} label={label} value={value || "Not provided"} />;
-                        })}
-                    </div>
-                ) : <p className="text-slate-500">Open a user to view details except password.</p>}
-            </Panel>
-        </section>
+                </div>
+            )}
         </div>
     );
 }
