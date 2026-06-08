@@ -175,7 +175,7 @@ export function StudyGroupsPage({ user, api, courses, flash, setRoute }) {
                         <div className="flex flex-wrap gap-2">
                             <button
                                 onClick={() => setSelectedCourse("")}
-                                className={`shrink-0 px-4 py-2 rounded-full font-bold text-sm whitespace-nowrap transition-all ${selectedCourse === "" ? "bg-teal-500 text-white shadow-lg shadow-teal-500/20" : "bg-white/10 text-slate-300 hover:bg-white/20 hover:text-white"}`}
+                                className={`shrink-0 px-5 py-2 rounded-full font-bold text-sm whitespace-nowrap transition-all cursor-pointer active:scale-95 ${selectedCourse === "" ? "bg-teal-500 text-white shadow-lg shadow-teal-500/30 ring-2 ring-teal-400 ring-offset-2 ring-offset-slate-950" : "bg-slate-800/80 border border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white hover:border-slate-500 shadow-sm"}`}
                             >
                                 All Courses
                             </button>
@@ -183,7 +183,7 @@ export function StudyGroupsPage({ user, api, courses, flash, setRoute }) {
                                 <button
                                     key={course.id}
                                     onClick={() => setSelectedCourse(course.id)}
-                                    className={`shrink-0 px-4 py-2 rounded-full font-bold text-sm whitespace-nowrap transition-all ${selectedCourse === course.id ? "bg-teal-500 text-white shadow-lg shadow-teal-500/20" : "bg-white/10 text-slate-300 hover:bg-white/20 hover:text-white"}`}
+                                    className={`shrink-0 px-5 py-2 rounded-full font-bold text-sm whitespace-nowrap transition-all cursor-pointer active:scale-95 ${selectedCourse === course.id ? "bg-teal-500 text-white shadow-lg shadow-teal-500/30 ring-2 ring-teal-400 ring-offset-2 ring-offset-slate-950" : "bg-slate-800/80 border border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white hover:border-slate-500 shadow-sm"}`}
                                 >
                                     {course.title}
                                 </button>
