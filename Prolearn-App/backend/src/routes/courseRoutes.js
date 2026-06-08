@@ -925,12 +925,26 @@ router.post("/courses/:id/payments/create", protect, asyncHandler(async (req, re
   if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
     const razorpay = new Razorpay({ key_id: process.env.RAZORPAY_KEY_ID, key_secret: process.env.RAZORPAY_KEY_SECRET });
     const receiptShort = `rcpt_${Date.now().toString().slice(-8)}${crypto.randomBytes(4).toString("hex")}`;
-    const order = await razorpay.orders.create({
+    const payload = {
       amount: Math.round(course.price * 100),
       currency: "INR",
       receipt: receiptShort,
       notes: { courseId: String(course._id), userId: String(req.user._id) },
-    });
+    };
+
+    if (course.instructor?.payoutDetails?.startsWith("acc_")) {
+      payload.transfers = [
+        {
+          account: course.instructor.payoutDetails,
+          amount: Math.round(instructorAmount * 100),
+          currency: "INR",
+          notes: { instructor: String(course.instructor._id) },
+          on_hold: false
+        }
+      ];
+    }
+    
+    const order = await razorpay.orders.create(payload);
     providerOrderId = order.id;
   }
   let upi = process.env.INSTRUCTOR_UPI || "sampleinstructor@upi";
